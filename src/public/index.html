@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>CineForge AI — Movie Studio</title>
+
+  <meta
+    name="description"
+    content="Create cinematic AI movies from your own stories."
+  >
+
+  <style>
+    :root {
+      --bg: #080914;
+      --panel: #121426;
+      --panel2: #191c32;
+      --text: #f5f4ff;
+      --muted: #a4a8c3;
+      --purple: #a78bfa;
+      --pink: #f472b6;
+      --border: rgba(255,255,255,.1);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(
+          ellipse at 15% 0%,
+          #25204b 0%,
+          transparent 40%
+        ),
+        var(--bg);
+      font-family: Inter, system-ui, Arial, sans-serif;
+      min-height: 100vh;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 20px 6%;
+      border-bottom: 1px solid var(--border);
+      background: rgba(8,9,20,.8);
+    }
+
+    .brand {
+      font-size: 22px;
+      font-weight: 850;
+      letter-spacing: -.8px;
+    }
+
+    .brand span {
+      color: var(--purple);
+    }
+
+    .badge {
+      border: 1px solid var(--border);
+      padding: 8px 13px;
+      border-radius: 999px;
+      color: #d3c7ff;
+      font-size: 12px;
+    }
+
+    main {
+      width: min(1100px, 92%);
+      margin: 0 auto;
+      padding: 48px 0 80px;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 38px;
+    }
+
+    .eyebrow {
+      color: var(--pink);
+      font-weight: 750;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-size: 12px;
+    }
+
+    h1 {
+      font-size: clamp(36px, 6vw, 62px);
+      line-height: 1.08;
+      letter-spacing: -2px;
+      margin: 16px 0;
+    }
+
+    h1 span {
+      background: linear-gradient(
+        100deg,
+        #c4b5fd,
+        #f0abfc,
+        #f9a8d4
+      );
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero p {
+      color: var(--muted);
+      line-height: 1.8;
+      max-width: 650px;
+      margin: 0 auto;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr .8fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .card {
+      background: rgba(18,20,38,.92);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 18px 55px rgba(0,0,0,.15);
+    }
+
+    h2 {
+      font-size: 19px;
+      margin: 0 0 8px;
+    }
+
+    .sub {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+      margin: 0 0 22px;
+    }
+
+    label {
+      display: block;
+      margin: 18px 0 9px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      color: var(--text);
+      background: #0c0e1c;
+      border: 1px solid #30334f;
+      border-radius: 11px;
+      padding: 13px 14px;
+      outline: none;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--purple);
+      box-shadow: 0 0 0 3px rgba(167,139,250,.1);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 170px;
+      line-height: 1.7;
+    }
+
+    select option {
+      background: #121426;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+      margin-top: 8px;
+    }
+
+    .primary {
+      width: 100%;
+      padding: 15px;
+      margin-top: 22px;
+      color: #100c22;
+      font-weight: 850;
+      border: 0;
+      border-radius: 12px;
+      background: linear-gradient(
+        100deg,
+        #c4b5fd,
+        #f0abfc
+      );
+      transition: transform .2s, opacity .2s;
+    }
+
+    .primary:hover {
+      transform: translateY(-2px);
+    }
+
+    .primary:disabled {
+      opacity: .5;
+      cursor: wait;
+      transform: none;
+    }
+
+    .secondary {
+      border: 1px solid var(--border);
+      background: var(--panel2);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 13px;
+    }
+
+    .statusbox {
+      background: #0b0d1a;
+      border: 1px solid var(--border);
+      padding: 17px;
+      border-radius: 13px;
+      margin-top: 22px;
+    }
+
+    .statusline {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
+    #status {
+      color: #d4c7ff;
+      overflow-wrap: anywhere;
+    }
+
+    .track {
+      height: 7px;
+      background: #272a43;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    #progress {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #a78bfa, #f472b6);
+      transition: width .5s;
+    }
+
+    .preview {
+      background: #090a14;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      min-height: 210px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      margin-top: 20px;
+    }
+
+    .preview-placeholder {
+      text-align: center;
+      color: var(--muted);
+      padding: 25px;
+      line-height: 1.8;
+    }
+
+    .preview-placeholder .icon {
+      font-size: 40px;
+      margin-bottom: 8px;
+    }
+
+    video {
+      width: 100%;
+      max-height: 500px;
+      background: #000;
+    }
+
+    .result-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .result-actions a {
+      color: #e8ddff;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      background: var(--panel2);
+      border-radius: 10px;
+      padding: 10px 13px;
+      font-size: 13px;
+    }
+
+    .scene-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .scene {
+      padding: 14px;
+      background: #0c0e1c;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+    }
+
+    .scene strong {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .scene p {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .scene a {
+      display: inline-block;
+      margin-top: 10px;
+      color: #d8b4fe;
+      font-size: 12px;
+    }
+
+    .notice {
+      display: none;
+      padding: 13px;
+      border-radius: 10px;
+      margin-top: 15px;
+      font-size: 13px;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+    }
+
+    .notice.error {
+      display: block;
+      color: #fecaca;
+      background: #35151e;
+      border: 1px solid #713040;
+    }
+
+    .notice.success {
+      display: block;
+      color: #bbf7d0;
+      background: #10291e;
+      border: 1px solid #24583a;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 25px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 760px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      main {
+        padding-top: 30px;
+      }
+
+      .card {
+        padding: 19px;
+      }
+
+      .topbar {
+        padding: 17px 4%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="brand">CINEFORGE<span> AI</span></div>
+    <div class="badge">AI MOVIE STUDIO</div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="eyebrow">Your story. Your cinema.</div>
+
+      <h1>Turn your imagination<br>into <span>movies.</span></h1>
+
+      <p>
+        Write a story, describe your scenes, and use AI
+        video and sound-generation services to create
+        cinematic clips you can combine into a movie.
+      </p>
+    </section>
+
+    <div class="layout">
+      <section class="card">
+        <h2>Create your movie</h2>
+
+        <p class="sub">
+          Start with one or two scenes to test generation.
+          Every scene may consume API credits.
+        </p>
+
+        <form id="movieForm">
+          <label for="title">Movie title</label>
+
+          <input
+            id="title"
+            maxlength="100"
+            placeholder="The Queen of the Castle"
+            required
+          >
+
+          <label for="style">Cinematic style</label>
+
+          <select id="style">
+            <option value="cinematic fantasy">
+              Fantasy Adventure
+            </option>
+
+            <option value="dark fairytale cinematic">
+              Dark Fairytale
+            </option>
+
+            <option value="epic medieval fantasy film">
+              Medieval Kingdom
+            </option>
+
+            <option value="science fiction cinematic">
+              Science Fiction
+            </option>
+
+            <option value="emotional cinematic drama">
+              Emotional Drama
+            </option>
+
+            <option value="realistic cinematic adventure">
+              Realistic Adventure
+            </option>
+          </select>
+
+          <label for="story">Your movie story</label>
+
+          <textarea
+            id="story"
+            required
+            minlength="20"
+            placeholder="Describe your movie..."
+          ></textarea>
+
+          <p class="hint">
+            Separate scenes with a blank line.
+            Each paragraph becomes one scene.
+          </p>
+
+          <label for="sceneCount">Maximum scenes</label>
+
+          <select id="sceneCount">
+            <option value="1">1 scene — test first</option>
+            <option value="2">2 scenes</option>
+            <option value="3">3 scenes</option>
+            <option value="4">4 scenes</option>
+            <option value="5">5 scenes</option>
+            <option value="6">6 scenes</option>
+            <option value="7">7 scenes</option>
+            <option value="8">8 scenes</option>
+          </select>
+
+          <label for="soundPrompt">
+            Sound effects for every scene
+          </label>
+
+          <input
+            id="soundPrompt"
+            value="Cinematic ambience, atmospheric wind, footsteps, natural environmental sounds"
+            maxlength="450"
+          >
+
+          <p class="hint">
+            The same sound prompt is used for each scene.
+            You can customize individual sounds in a future version.
+          </p>
+
+          <button class="primary" id="generateBtn" type="submit">
+            ✨ Generate My Movie
+          </button>
+        </form>
+
+        <div id="notice" class="notice"></div>
+
+        <div class="statusbox">
+          <div class="statusline">
+            <strong>Generation status</strong>
+            <span id="percent">0%</span>
+          </div>
+
+          <div id="status">
+            Waiting for your story
+          </div>
+
+          <div class="track" style="margin-top:13px">
+            <div id="progress"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Movie preview</h2>
+
+        <p class="sub">
+          Your generated movie will appear here when ready.
+        </p>
+
+        <div class="preview" id="preview">
+          <div class="preview-placeholder">
+            <div class="icon">🎬</div>
+            <strong>Your cinema starts here</strong>
+            <div>Real generated video will appear here.</div>
+          </div>
+        </div>
+
+        <div class="result-actions" id="resultActions"></div>
+
+        <h2 style="margin-top:28px">Generated scenes</h2>
+
+        <div class="scene-list" id="sceneList">
+          <div class="scene">
+            <strong>No scenes generated yet</strong>
+            <p>Your finished scenes will appear here.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    CineForge AI Movie Studio · Real AI generation requires
+    configured API access and may incur charges.
+  </footer>
+
+  <script>
+    const form = document.getElementById('movieForm');
+    const generateBtn = document.getElementById('generateBtn');
+
+    const statusText = document.getElementById('status');
+    const percentText = document.getElementById('percent');
+    const progress = document.getElementById('progress');
+
+    const notice = document.getElementById('notice');
+    const preview = document.getElementById('preview');
+
+    const sceneList = document.getElementById('sceneList');
+    const resultActions = document.getElementById('resultActions');
+
+    let currentJobId = null;
+    let polling = false;
+
+    function showNotice(message, type) {
+      notice.className = 'notice ' + type;
+      notice.textContent = message;
+    }
+
+    function updateProgress(value, message) {
+      const safeValue = Math.max(
+        0,
+        Math.min(100, Number(value) || 0)
+      );
+
+      progress.style.width = safeValue + '%';
+      percentText.textContent = safeValue + '%';
+      statusText.textContent = message || '';
+    }
+
+    function renderScenes(scenes) {
+      sceneList.replaceChildren();
+
+      if (!scenes || scenes.length === 0) {
+        const item = document.createElement('div');
+        item.className = 'scene';
+        item.textContent = 'No completed scenes yet.';
+        sceneList.appendChild(item);
+        return;
+      }
+
+      for (const scene of scenes) {
+        const card = document.createElement('div');
+        card.className = 'scene';
+
+        const heading = document.createElement('strong');
+        heading.textContent = 'Scene ' + scene.number;
+
+        const description = document.createElement('p');
+        description.textContent = scene.description;
+
+        card.append(heading, description);
+
+        if (scene.video) {
+          const link = document.createElement('a');
+
+          link.href = scene.video;
+          link.target = '_blank';
+          link.rel = 'noopener';
+          link.textContent = 'Open generated video';
+
+          card.appendChild(link);
+        }
+
+        sceneList.appendChild(card);
+      }
+    }
+
+    async function pollJob(jobId) {
+      if (polling) return;
+
+      polling = true;
+
+      try {
+        while (true) {
+          const response = await fetch(
+            '/api/jobs/' + encodeURIComponent(jobId)
+          );
+
+          const job = await response.json();
+
+          if (!response.ok) {
+            throw new Error(
+              job.error || 'Could not check generation status.'
+            );
+          }
+
+          updateProgress(
+            job.progress,
+            job.message || job.status
+          );
+
+          renderScenes(job.scenes || []);
+
+          if (job.status === 'completed') {
+            if (job.movieUrl) {
+              const video = document.createElement('video');
+
+              video.controls = true;
+              video.preload = 'metadata';
+              video.src = job.movieUrl;
+
+              preview.replaceChildren(video);
+
+              const link = document.createElement('a');
+
+              link.href = job.movieUrl;
+              link.download = 'cineforge-movie.mp4';
+              link.textContent = '⬇ Download Movie';
+
+              resultActions.replaceChildren(link);
+            }
+
+            showNotice(
+              'Your movie generation has completed.',
+              'success'
+            );
+
+            break;
+          }
+
+          if (job.status === 'failed') {
+            showNotice(
+              job.message || 'Generation failed.',
+              'error'
+            );
+
+            break;
+          }
+
+          await new Promise(resolve => setTimeout(resolve, 3000));
+        }
+      } catch (error) {
+        showNotice(error.message, 'error');
+      } finally {
+        polling = false;
+        generateBtn.disabled = false;
+        generateBtn.textContent = '✨ Generate My Movie';
+      }
+    }
+
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+
+      if (polling) return;
+
+      notice.className = 'notice';
+      notice.textContent = '';
+
+      resultActions.replaceChildren();
+
+      preview.innerHTML = `
+        <div class="preview-placeholder">
+          <div class="icon">🎥</div>
+          <strong>Preparing your movie...</strong>
+          <div>Waiting for the generation server.</div>
+        </div>
+      `;
+
+      generateBtn.disabled = true;
+      generateBtn.textContent = 'Generating...';
+
+      updateProgress(0, 'Sending your movie request');
+
+      try {
+        const story = document.getElementById('story').value.trim();
+
+        const scenes = story
+          .split(/\n\s*\n/)
+          .map(text => text.trim())
+          .filter(Boolean);
+
+        const maxScenes = Number(
+          document.getElementById('sceneCount').value
+        );
+
+        if (scenes.length > maxScenes) {
+          throw new Error(
+            `You entered ${scenes.length} scenes, but selected a maximum of ${maxScenes}. ` +
+            'Choose a larger limit or remove extra paragraphs.'
+          );
+        }
+
+        const soundPrompt =
+          document.getElementById('soundPrompt').value.trim();
+
+        const payload = {
+          title: document.getElementById('title').value.trim(),
+          story,
+          style: document.getElementById('style').value,
+
+          scenes: scenes.map(description => ({
+            description,
+            sound: soundPrompt
+          }))
+        };
+
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+
+          headers: {
+            'Content-Type': 'application/json'
+          },
+
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.error || 'Could not start generation.'
+          );
+        }
+
+        currentJobId = data.jobId;
+
+        showNotice(
+          'Your movie request has been accepted. ' +
+          'Generation may take several minutes and consume API credits.',
+          'success'
+        );
+
+        await pollJob(currentJobId);
+
+      } catch (error) {
+        showNotice(error.message, 'error');
+
+        generateBtn.disabled = false;
+        generateBtn.textContent = '✨ Generate My Movie';
+      }
+    });
+
+    fetch('/api/health')
+      .then(response => response.json())
+      .then(data => {
+        if (!data.videoProviderConfigured) {
+          showNotice(
+            'The video API has not been configured on the server yet.',
+            'error'
+          );
+        }
+      })
+      .catch(() => {
+        showNotice(
+          'The generation server is not connected yet. ' +
+          'The interface will work when the backend is running.',
+          'error'
+        );
+      });
+  </script>
+</body>
+</html>
