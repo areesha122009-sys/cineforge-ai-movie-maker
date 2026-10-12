@@ -1,0 +1,15 @@
+{
+  "name": "cineforge-ai-movie-maker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "@fal-ai/client": "^1.6.2",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "nanoid": "^5.1.0"
+  }
+}
