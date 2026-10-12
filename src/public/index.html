@@ -3,24 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>CineForge AI — Movie Studio</title>
-
-  <meta
-    name="description"
-    content="Create cinematic AI movies from your own stories."
-  >
+  <meta name="theme-color" content="#0b0718">
+  <title>CineForge AI — Movie Maker</title>
 
   <style>
     :root {
-      --bg: #080914;
-      --panel: #121426;
-      --panel2: #191c32;
-      --text: #f5f4ff;
-      --muted: #a4a8c3;
+      --bg: #0b0718;
+      --panel: #151027;
+      --panel2: #1c1534;
       --purple: #a78bfa;
-      --pink: #f472b6;
-      --border: rgba(255,255,255,.1);
+      --pink: #f0abfc;
+      --text: #f7f3ff;
+      --muted: #aaa0c2;
+      --border: rgba(192, 163, 255, .17);
+      --green: #86efac;
+      --red: #fda4af;
     }
 
     * {
@@ -29,22 +26,16 @@
 
     body {
       margin: 0;
+      min-height: 100vh;
       color: var(--text);
       background:
-        radial-gradient(
-          ellipse at 15% 0%,
-          #25204b 0%,
-          transparent 40%
-        ),
+        radial-gradient(ellipse at 15% 0%, #30205a 0%, transparent 40%),
+        radial-gradient(ellipse at 100% 35%, #291343 0%, transparent 35%),
         var(--bg);
-      font-family: Inter, system-ui, Arial, sans-serif;
-      min-height: 100vh;
+      font-family: Inter, system-ui, -apple-system, Arial, sans-serif;
     }
 
-    button,
-    input,
-    textarea,
-    select {
+    button, input {
       font: inherit;
     }
 
@@ -54,343 +45,449 @@
 
     .topbar {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      gap: 20px;
-      padding: 20px 6%;
+      align-items: center;
+      padding: 22px 6%;
       border-bottom: 1px solid var(--border);
-      background: rgba(8,9,20,.8);
+      background: rgba(11, 7, 24, .6);
     }
 
     .brand {
-      font-size: 22px;
-      font-weight: 850;
-      letter-spacing: -.8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 20px;
+      letter-spacing: 1px;
     }
 
-    .brand span {
-      color: var(--purple);
+    .logo {
+      display: grid;
+      place-items: center;
+      width: 43px;
+      height: 43px;
+      border-radius: 13px;
+      background: linear-gradient(135deg, #a78bfa, #e879f9);
+      color: #160a2b;
+      font-size: 23px;
     }
 
-    .badge {
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       border: 1px solid var(--border);
-      padding: 8px 13px;
-      border-radius: 999px;
-      color: #d3c7ff;
+      background: rgba(255,255,255,.035);
+      padding: 9px 14px;
+      border-radius: 30px;
+      color: var(--muted);
       font-size: 12px;
     }
 
-    main {
-      width: min(1100px, 92%);
-      margin: 0 auto;
-      padding: 48px 0 80px;
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 10px var(--green);
     }
 
     .hero {
+      max-width: 1100px;
+      margin: auto;
+      padding: 60px 24px 35px;
       text-align: center;
-      margin-bottom: 38px;
     }
 
     .eyebrow {
+      display: inline-block;
       color: var(--pink);
-      font-weight: 750;
-      text-transform: uppercase;
-      letter-spacing: 2px;
+      border: 1px solid rgba(240,171,252,.24);
+      background: rgba(192,132,252,.08);
+      border-radius: 30px;
+      padding: 8px 15px;
       font-size: 12px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
     }
 
     h1 {
-      font-size: clamp(36px, 6vw, 62px);
+      font-size: clamp(36px, 6vw, 66px);
       line-height: 1.08;
       letter-spacing: -2px;
-      margin: 16px 0;
+      margin: 24px 0 18px;
     }
 
-    h1 span {
-      background: linear-gradient(
-        100deg,
-        #c4b5fd,
-        #f0abfc,
-        #f9a8d4
-      );
-      -webkit-background-clip: text;
+    .gradient-text {
+      background: linear-gradient(90deg, #c4b5fd, #f0abfc, #c4b5fd);
       background-clip: text;
+      -webkit-background-clip: text;
       color: transparent;
     }
 
     .hero p {
       color: var(--muted);
-      line-height: 1.8;
       max-width: 650px;
-      margin: 0 auto;
+      margin: auto;
+      line-height: 1.8;
+      font-size: 15px;
     }
 
-    .layout {
+    .workspace {
       display: grid;
-      grid-template-columns: 1fr .8fr;
-      gap: 22px;
-      align-items: start;
+      grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+      gap: 24px;
+      max-width: 1200px;
+      padding: 20px 24px 70px;
+      margin: auto;
     }
 
     .card {
-      background: rgba(18,20,38,.92);
       border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 25px;
-      box-shadow: 0 18px 55px rgba(0,0,0,.15);
+      background: linear-gradient(145deg, rgba(28,21,52,.95), rgba(17,12,32,.96));
+      border-radius: 22px;
+      padding: 27px;
+      box-shadow: 0 20px 70px rgba(0,0,0,.18);
+      min-width: 0;
+    }
+
+    .card-heading {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      margin-bottom: 24px;
+    }
+
+    .number {
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: rgba(167,139,250,.15);
+      color: var(--purple);
+      font-weight: 800;
     }
 
     h2 {
       font-size: 19px;
-      margin: 0 0 8px;
+      margin: 0 0 5px;
     }
 
-    .sub {
+    .subtitle {
+      font-size: 12px;
       color: var(--muted);
-      font-size: 13px;
-      line-height: 1.7;
-      margin: 0 0 22px;
     }
 
-    label {
+    .field-label {
       display: block;
-      margin: 18px 0 9px;
+      margin: 22px 0 10px;
       font-size: 13px;
       font-weight: 700;
     }
 
-    input,
-    textarea,
-    select {
+    .text-input {
       width: 100%;
+      background: rgba(8,5,18,.6);
+      border: 1px solid var(--border);
       color: var(--text);
-      background: #0c0e1c;
-      border: 1px solid #30334f;
-      border-radius: 11px;
-      padding: 13px 14px;
+      border-radius: 12px;
+      padding: 14px;
       outline: none;
     }
 
-    input:focus,
-    textarea:focus,
-    select:focus {
+    .text-input:focus {
       border-color: var(--purple);
-      box-shadow: 0 0 0 3px rgba(167,139,250,.1);
+      box-shadow: 0 0 0 3px rgba(167,139,250,.09);
     }
 
-    textarea {
-      resize: vertical;
-      min-height: 170px;
-      line-height: 1.7;
+    .upload-zone {
+      display: block;
+      border: 1.5px dashed rgba(192,163,255,.4);
+      background: rgba(167,139,250,.045);
+      border-radius: 17px;
+      padding: 32px 18px;
+      text-align: center;
+      transition: .2s;
+      cursor: pointer;
     }
 
-    select option {
-      background: #121426;
+    .upload-zone:hover,
+    .upload-zone.dragover {
+      background: rgba(167,139,250,.12);
+      border-color: var(--purple);
     }
 
-    .hint {
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.6;
-      margin-top: 8px;
-    }
-
-    .primary {
-      width: 100%;
-      padding: 15px;
-      margin-top: 22px;
-      color: #100c22;
-      font-weight: 850;
-      border: 0;
-      border-radius: 12px;
-      background: linear-gradient(
-        100deg,
-        #c4b5fd,
-        #f0abfc
-      );
-      transition: transform .2s, opacity .2s;
-    }
-
-    .primary:hover {
-      transform: translateY(-2px);
-    }
-
-    .primary:disabled {
-      opacity: .5;
-      cursor: wait;
-      transform: none;
-    }
-
-    .secondary {
-      border: 1px solid var(--border);
-      background: var(--panel2);
-      color: var(--text);
-      border-radius: 10px;
-      padding: 10px 13px;
-    }
-
-    .statusbox {
-      background: #0b0d1a;
-      border: 1px solid var(--border);
-      padding: 17px;
-      border-radius: 13px;
-      margin-top: 22px;
-    }
-
-    .statusline {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      font-size: 13px;
+    .upload-icon {
+      font-size: 36px;
       margin-bottom: 12px;
     }
 
-    #status {
-      color: #d4c7ff;
+    .upload-title {
+      font-size: 15px;
+      font-weight: 750;
+      margin-bottom: 8px;
+    }
+
+    .upload-hint {
+      font-size: 12px;
+      line-height: 1.7;
+      color: var(--muted);
+    }
+
+    #videoFiles {
+      display: none;
+    }
+
+    .file-list {
+      margin-top: 14px;
+      display: grid;
+      gap: 9px;
+    }
+
+    .file-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: rgba(255,255,255,.025);
+      font-size: 12px;
+    }
+
+    .file-name {
       overflow-wrap: anywhere;
     }
 
-    .track {
-      height: 7px;
-      background: #272a43;
-      border-radius: 99px;
-      overflow: hidden;
+    .file-size {
+      color: var(--muted);
+      white-space: nowrap;
     }
 
-    #progress {
-      width: 0%;
-      height: 100%;
-      background: linear-gradient(90deg, #a78bfa, #f472b6);
-      transition: width .5s;
+    .remove-btn {
+      border: 0;
+      background: transparent;
+      color: var(--red);
+      font-size: 17px;
+      padding: 3px 6px;
     }
 
-    .preview {
-      background: #090a14;
+    .info-box {
+      margin-top: 19px;
+      padding: 14px;
+      border-radius: 12px;
+      background: rgba(167,139,250,.07);
       border: 1px solid var(--border);
-      border-radius: 14px;
-      min-height: 210px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.8;
+    }
+
+    .info-box strong {
+      color: var(--text);
+    }
+
+    .primary-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border: 0;
+      border-radius: 13px;
+      margin-top: 23px;
+      padding: 16px;
+      color: #190c2b;
+      font-weight: 850;
+      background: linear-gradient(100deg, #c4b5fd, #f0abfc);
+      box-shadow: 0 8px 30px rgba(192,132,252,.12);
+      transition: transform .2s, opacity .2s;
+    }
+
+    .primary-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+    }
+
+    .primary-btn:disabled {
+      cursor: not-allowed;
+      opacity: .55;
+    }
+
+    .message {
+      display: none;
+      margin-top: 17px;
+      border-radius: 12px;
+      padding: 13px 15px;
+      font-size: 13px;
+      line-height: 1.7;
+      overflow-wrap: anywhere;
+    }
+
+    .message.show {
+      display: block;
+    }
+
+    .message.info {
+      color: #ddd6fe;
+      background: rgba(139,92,246,.12);
+      border: 1px solid rgba(167,139,250,.2);
+    }
+
+    .message.success {
+      color: var(--green);
+      background: rgba(34,197,94,.08);
+      border: 1px solid rgba(134,239,172,.2);
+    }
+
+    .message.error {
+      color: var(--red);
+      background: rgba(244,63,94,.08);
+      border: 1px solid rgba(253,164,175,.2);
+    }
+
+    .preview-screen {
+      min-height: 285px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background:
+        radial-gradient(ellipse at center, rgba(139,92,246,.18), transparent 60%),
+        #090611;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      margin-top: 20px;
     }
 
     .preview-placeholder {
       text-align: center;
+      padding: 30px;
+    }
+
+    .preview-symbol {
+      font-size: 55px;
+      opacity: .8;
+      margin-bottom: 16px;
+    }
+
+    .preview-placeholder h3 {
+      font-size: 17px;
+      margin: 0 0 10px;
+    }
+
+    .preview-placeholder p {
       color: var(--muted);
-      padding: 25px;
-      line-height: 1.8;
+      font-size: 12px;
+      line-height: 1.7;
+      max-width: 270px;
+      margin: auto;
     }
 
-    .preview-placeholder .icon {
-      font-size: 40px;
-      margin-bottom: 8px;
-    }
-
-    video {
+    #moviePlayer {
+      display: none;
       width: 100%;
-      max-height: 500px;
+      max-height: 550px;
       background: #000;
     }
 
-    .result-actions {
+    .preview-meta {
       display: flex;
-      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
       gap: 10px;
-      margin-top: 15px;
+      margin: 20px 0;
     }
 
-    .result-actions a {
-      color: #e8ddff;
-      text-decoration: none;
-      border: 1px solid var(--border);
-      background: var(--panel2);
-      border-radius: 10px;
-      padding: 10px 13px;
-      font-size: 13px;
-    }
-
-    .scene-list {
-      display: grid;
-      gap: 10px;
-      margin-top: 18px;
-    }
-
-    .scene {
-      padding: 14px;
-      background: #0c0e1c;
-      border: 1px solid var(--border);
-      border-radius: 11px;
-    }
-
-    .scene strong {
-      display: block;
-      font-size: 13px;
-      margin-bottom: 6px;
-    }
-
-    .scene p {
+    .meta-label {
       color: var(--muted);
       font-size: 12px;
-      line-height: 1.6;
-      margin: 0;
     }
 
-    .scene a {
-      display: inline-block;
-      margin-top: 10px;
-      color: #d8b4fe;
-      font-size: 12px;
-    }
-
-    .notice {
-      display: none;
-      padding: 13px;
-      border-radius: 10px;
-      margin-top: 15px;
+    .meta-value {
       font-size: 13px;
-      line-height: 1.6;
-      overflow-wrap: anywhere;
+      font-weight: 750;
+      margin-top: 5px;
     }
 
-    .notice.error {
-      display: block;
-      color: #fecaca;
-      background: #35151e;
-      border: 1px solid #713040;
+    .download-btn {
+      display: none;
+      width: 100%;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 12px;
+      padding: 14px;
+      color: var(--text);
+      background: rgba(167,139,250,.13);
+      border: 1px solid rgba(167,139,250,.3);
+      font-size: 13px;
+      font-weight: 750;
     }
 
-    .notice.success {
+    .download-btn.visible {
       display: block;
-      color: #bbf7d0;
-      background: #10291e;
-      border: 1px solid #24583a;
+    }
+
+    .steps {
+      display: grid;
+      gap: 14px;
+      margin-top: 24px;
+    }
+
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 12px;
+      line-height: 1.7;
+      color: var(--muted);
+    }
+
+    .step-icon {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      background: rgba(167,139,250,.12);
+      color: var(--purple);
+    }
+
+    .step strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 2px;
     }
 
     footer {
-      border-top: 1px solid var(--border);
       text-align: center;
       padding: 25px;
-      color: var(--muted);
+      color: #7e729a;
+      border-top: 1px solid var(--border);
       font-size: 12px;
     }
 
-    @media (max-width: 760px) {
-      .layout {
+    @media (max-width: 800px) {
+      .workspace {
         grid-template-columns: 1fr;
       }
 
-      main {
-        padding-top: 30px;
+      .hero {
+        padding-top: 42px;
       }
 
       .card {
-        padding: 19px;
+        padding: 21px;
       }
 
       .topbar {
-        padding: 17px 4%;
+        padding: 16px 20px;
+      }
+
+      .brand {
+        font-size: 16px;
       }
     }
   </style>
@@ -398,422 +495,475 @@
 
 <body>
   <header class="topbar">
-    <div class="brand">CINEFORGE<span> AI</span></div>
-    <div class="badge">AI MOVIE STUDIO</div>
+    <div class="brand">
+      <div class="logo">▶</div>
+      <span>CINEFORGE <span class="gradient-text">AI</span></span>
+    </div>
+
+    <div class="status-pill">
+      <span class="dot"></span>
+      <span>Movie Studio</span>
+    </div>
   </header>
 
-  <main>
-    <section class="hero">
-      <div class="eyebrow">Your story. Your cinema.</div>
+  <section class="hero">
+    <span class="eyebrow">Your personal movie studio</span>
 
-      <h1>Turn your imagination<br>into <span>movies.</span></h1>
+    <h1>
+      Bring Your Clips<br>
+      <span class="gradient-text">Together as a Movie.</span>
+    </h1>
 
-      <p>
-        Write a story, describe your scenes, and use AI
-        video and sound-generation services to create
-        cinematic clips you can combine into a movie.
-      </p>
+    <p>
+      Upload your video scenes, combine them into one movie,
+      preview the finished result, and download your MP4 file.
+    </p>
+  </section>
+
+  <main class="workspace">
+
+    <section class="card">
+      <div class="card-heading">
+        <div class="number">01</div>
+        <div>
+          <h2>Build Your Movie</h2>
+          <div class="subtitle">Upload the scenes you want to combine</div>
+        </div>
+      </div>
+
+      <label class="field-label" for="movieTitle">Movie title</label>
+
+      <input
+        class="text-input"
+        id="movieTitle"
+        type="text"
+        maxlength="100"
+        placeholder="e.g. The Queen of the Castle"
+      >
+
+      <label class="field-label">Upload your video scenes</label>
+
+      <label class="upload-zone" id="dropZone" for="videoFiles">
+        <div class="upload-icon">🎬</div>
+        <div class="upload-title">Choose your video clips</div>
+        <div class="upload-hint">
+          Click to browse or drag and drop videos here<br>
+          MP4, MOV, WEBM, M4V or AVI<br>
+          Up to 20 clips · 100 MB per clip
+        </div>
+      </label>
+
+      <input
+        id="videoFiles"
+        type="file"
+        accept=".mp4,.mov,.webm,.m4v,.avi,video/mp4,video/quicktime,video/webm,video/x-m4v,video/x-msvideo"
+        multiple
+      >
+
+      <div class="file-list" id="fileList"></div>
+
+      <div class="info-box">
+        <strong>Important:</strong> Upload real video clips generated
+        by a video tool or recorded by you. CineForge will process
+        and join them in the order shown below. It does not generate
+        new AI video scenes from a text prompt in this version.
+      </div>
+
+      <button class="primary-btn" id="makeMovieBtn" type="button">
+        <span>✦</span>
+        <span id="buttonText">Combine My Movie</span>
+      </button>
+
+      <div class="message" id="statusMessage" role="status" aria-live="polite"></div>
     </section>
 
-    <div class="layout">
-      <section class="card">
-        <h2>Create your movie</h2>
+    <section class="card">
+      <div class="card-heading">
+        <div class="number">02</div>
+        <div>
+          <h2>Movie Preview</h2>
+          <div class="subtitle">Your assembled movie will appear here</div>
+        </div>
+      </div>
 
-        <p class="sub">
-          Start with one or two scenes to test generation.
-          Every scene may consume API credits.
-        </p>
-
-        <form id="movieForm">
-          <label for="title">Movie title</label>
-
-          <input
-            id="title"
-            maxlength="100"
-            placeholder="The Queen of the Castle"
-            required
-          >
-
-          <label for="style">Cinematic style</label>
-
-          <select id="style">
-            <option value="cinematic fantasy">
-              Fantasy Adventure
-            </option>
-
-            <option value="dark fairytale cinematic">
-              Dark Fairytale
-            </option>
-
-            <option value="epic medieval fantasy film">
-              Medieval Kingdom
-            </option>
-
-            <option value="science fiction cinematic">
-              Science Fiction
-            </option>
-
-            <option value="emotional cinematic drama">
-              Emotional Drama
-            </option>
-
-            <option value="realistic cinematic adventure">
-              Realistic Adventure
-            </option>
-          </select>
-
-          <label for="story">Your movie story</label>
-
-          <textarea
-            id="story"
-            required
-            minlength="20"
-            placeholder="Describe your movie..."
-          ></textarea>
-
-          <p class="hint">
-            Separate scenes with a blank line.
-            Each paragraph becomes one scene.
+      <div class="preview-screen">
+        <div class="preview-placeholder" id="placeholder">
+          <div class="preview-symbol">🎞️</div>
+          <h3>Your story starts here</h3>
+          <p>
+            Select your video scenes, then click
+            “Combine My Movie” to create a single MP4 file.
           </p>
-
-          <label for="sceneCount">Maximum scenes</label>
-
-          <select id="sceneCount">
-            <option value="1">1 scene — test first</option>
-            <option value="2">2 scenes</option>
-            <option value="3">3 scenes</option>
-            <option value="4">4 scenes</option>
-            <option value="5">5 scenes</option>
-            <option value="6">6 scenes</option>
-            <option value="7">7 scenes</option>
-            <option value="8">8 scenes</option>
-          </select>
-
-          <label for="soundPrompt">
-            Sound effects for every scene
-          </label>
-
-          <input
-            id="soundPrompt"
-            value="Cinematic ambience, atmospheric wind, footsteps, natural environmental sounds"
-            maxlength="450"
-          >
-
-          <p class="hint">
-            The same sound prompt is used for each scene.
-            You can customize individual sounds in a future version.
-          </p>
-
-          <button class="primary" id="generateBtn" type="submit">
-            ✨ Generate My Movie
-          </button>
-        </form>
-
-        <div id="notice" class="notice"></div>
-
-        <div class="statusbox">
-          <div class="statusline">
-            <strong>Generation status</strong>
-            <span id="percent">0%</span>
-          </div>
-
-          <div id="status">
-            Waiting for your story
-          </div>
-
-          <div class="track" style="margin-top:13px">
-            <div id="progress"></div>
-          </div>
         </div>
-      </section>
 
-      <section class="card">
-        <h2>Movie preview</h2>
+        <video
+          id="moviePlayer"
+          controls
+          playsinline
+          preload="metadata"
+        ></video>
+      </div>
 
-        <p class="sub">
-          Your generated movie will appear here when ready.
-        </p>
+      <div class="preview-meta">
+        <div>
+          <div class="meta-label">MOVIE TITLE</div>
+          <div class="meta-value" id="previewTitle">Untitled Movie</div>
+        </div>
 
-        <div class="preview" id="preview">
-          <div class="preview-placeholder">
-            <div class="icon">🎬</div>
-            <strong>Your cinema starts here</strong>
-            <div>Real generated video will appear here.</div>
+        <div style="text-align:right">
+          <div class="meta-label">SCENES COMBINED</div>
+          <div class="meta-value" id="sceneCount">0 clips</div>
+        </div>
+      </div>
+
+      <a
+        id="downloadBtn"
+        class="download-btn"
+        href="#"
+        download="cineforge-movie.mp4"
+      >
+        ↓ &nbsp; Download Your Movie (MP4)
+      </a>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-icon">1</div>
+          <div>
+            <strong>Upload your clips</strong>
+            Select your scenes in the order you want them to appear.
           </div>
         </div>
 
-        <div class="result-actions" id="resultActions"></div>
-
-        <h2 style="margin-top:28px">Generated scenes</h2>
-
-        <div class="scene-list" id="sceneList">
-          <div class="scene">
-            <strong>No scenes generated yet</strong>
-            <p>Your finished scenes will appear here.</p>
+        <div class="step">
+          <div class="step-icon">2</div>
+          <div>
+            <strong>Combine your scenes</strong>
+            The server converts clips to a consistent video format
+            and joins them together.
           </div>
         </div>
-      </section>
-    </div>
+
+        <div class="step">
+          <div class="step-icon">3</div>
+          <div>
+            <strong>Preview and download</strong>
+            Watch your finished movie and save the MP4 to your device.
+          </div>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <footer>
-    CineForge AI Movie Studio · Real AI generation requires
-    configured API access and may incur charges.
+    CINEFORGE AI · Your stories, your creativity.
   </footer>
 
   <script>
-    const form = document.getElementById('movieForm');
-    const generateBtn = document.getElementById('generateBtn');
+    const fileInput = document.getElementById('videoFiles');
+    const dropZone = document.getElementById('dropZone');
+    const fileList = document.getElementById('fileList');
+    const makeMovieBtn = document.getElementById('makeMovieBtn');
+    const buttonText = document.getElementById('buttonText');
+    const statusMessage = document.getElementById('statusMessage');
+    const movieTitle = document.getElementById('movieTitle');
+    const previewTitle = document.getElementById('previewTitle');
+    const sceneCount = document.getElementById('sceneCount');
+    const moviePlayer = document.getElementById('moviePlayer');
+    const placeholder = document.getElementById('placeholder');
+    const downloadBtn = document.getElementById('downloadBtn');
 
-    const statusText = document.getElementById('status');
-    const percentText = document.getElementById('percent');
-    const progress = document.getElementById('progress');
+    let selectedFiles = [];
+    let movieObjectUrl = null;
+    let isProcessing = false;
 
-    const notice = document.getElementById('notice');
-    const preview = document.getElementById('preview');
+    const allowedExtensions = [
+      '.mp4', '.mov', '.webm', '.m4v', '.avi'
+    ];
 
-    const sceneList = document.getElementById('sceneList');
-    const resultActions = document.getElementById('resultActions');
+    function formatSize(bytes) {
+      if (bytes < 1024 * 1024) {
+        return (bytes / 1024).toFixed(0) + ' KB';
+      }
 
-    let currentJobId = null;
-    let polling = false;
-
-    function showNotice(message, type) {
-      notice.className = 'notice ' + type;
-      notice.textContent = message;
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
     }
 
-    function updateProgress(value, message) {
-      const safeValue = Math.max(
-        0,
-        Math.min(100, Number(value) || 0)
-      );
-
-      progress.style.width = safeValue + '%';
-      percentText.textContent = safeValue + '%';
-      statusText.textContent = message || '';
+    function showMessage(text, type = 'info') {
+      statusMessage.textContent = text;
+      statusMessage.className = 'message show ' + type;
     }
 
-    function renderScenes(scenes) {
-      sceneList.replaceChildren();
+    function hideMessage() {
+      statusMessage.textContent = '';
+      statusMessage.className = 'message';
+    }
 
-      if (!scenes || scenes.length === 0) {
-        const item = document.createElement('div');
-        item.className = 'scene';
-        item.textContent = 'No completed scenes yet.';
-        sceneList.appendChild(item);
+    function validVideo(file) {
+      const extension = '.' + file.name.split('.').pop().toLowerCase();
+
+      return allowedExtensions.includes(extension);
+    }
+
+    function addFiles(fileCollection) {
+      hideMessage();
+
+      const incoming = Array.from(fileCollection || []);
+      let rejected = 0;
+
+      for (const file of incoming) {
+        if (!validVideo(file)) {
+          rejected++;
+          continue;
+        }
+
+        if (file.size > 100 * 1024 * 1024) {
+          rejected++;
+          continue;
+        }
+
+        if (selectedFiles.length >= 20) {
+          rejected++;
+          continue;
+        }
+
+        const duplicate = selectedFiles.some(existing =>
+          existing.name === file.name &&
+          existing.size === file.size &&
+          existing.lastModified === file.lastModified
+        );
+
+        if (!duplicate) {
+          selectedFiles.push(file);
+        }
+      }
+
+      renderFiles();
+
+      if (rejected > 0) {
+        showMessage(
+          rejected + ' file(s) were skipped. Use supported video formats, ' +
+          'files smaller than 100 MB, and no more than 20 clips.',
+          'error'
+        );
+      }
+    }
+
+    function renderFiles() {
+      fileList.replaceChildren();
+
+      selectedFiles.forEach((file, index) => {
+        const row = document.createElement('div');
+        row.className = 'file-item';
+
+        const details = document.createElement('div');
+        details.style.minWidth = '0';
+
+        const name = document.createElement('div');
+        name.className = 'file-name';
+        name.textContent = (index + 1) + '. ' + file.name;
+
+        const size = document.createElement('div');
+        size.className = 'file-size';
+        size.textContent = formatSize(file.size);
+
+        details.append(name, size);
+
+        const controls = document.createElement('div');
+        controls.style.display = 'flex';
+        controls.style.alignItems = 'center';
+        controls.style.gap = '4px';
+
+        if (index > 0) {
+          const up = document.createElement('button');
+          up.type = 'button';
+          up.className = 'remove-btn';
+          up.style.color = 'var(--purple)';
+          up.textContent = '↑';
+          up.title = 'Move clip earlier';
+          up.setAttribute('aria-label', 'Move ' + file.name + ' earlier');
+
+          up.addEventListener('click', () => {
+            [selectedFiles[index - 1], selectedFiles[index]] =
+              [selectedFiles[index], selectedFiles[index - 1]];
+
+            renderFiles();
+          });
+
+          controls.appendChild(up);
+        }
+
+        if (index < selectedFiles.length - 1) {
+          const down = document.createElement('button');
+          down.type = 'button';
+          down.className = 'remove-btn';
+          down.style.color = 'var(--purple)';
+          down.textContent = '↓';
+          down.title = 'Move clip later';
+          down.setAttribute('aria-label', 'Move ' + file.name + ' later');
+
+          down.addEventListener('click', () => {
+            [selectedFiles[index], selectedFiles[index + 1]] =
+              [selectedFiles[index + 1], selectedFiles[index]];
+
+            renderFiles();
+          });
+
+          controls.appendChild(down);
+        }
+
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'remove-btn';
+        remove.textContent = '×';
+        remove.title = 'Remove clip';
+        remove.setAttribute('aria-label', 'Remove ' + file.name);
+
+        remove.addEventListener('click', () => {
+          selectedFiles.splice(index, 1);
+          renderFiles();
+        });
+
+        controls.appendChild(remove);
+        row.append(details, controls);
+        fileList.appendChild(row);
+      });
+
+      sceneCount.textContent =
+        selectedFiles.length + (selectedFiles.length === 1 ? ' clip' : ' clips');
+    }
+
+    fileInput.addEventListener('change', event => {
+      addFiles(event.target.files);
+
+      // Allow choosing the same file again after removing it.
+      fileInput.value = '';
+    });
+
+    dropZone.addEventListener('dragover', event => {
+      event.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', event => {
+      event.preventDefault();
+      dropZone.classList.remove('dragover');
+      addFiles(event.dataTransfer.files);
+    });
+
+    movieTitle.addEventListener('input', () => {
+      previewTitle.textContent = movieTitle.value.trim() || 'Untitled Movie';
+    });
+
+    makeMovieBtn.addEventListener('click', async () => {
+      if (isProcessing) return;
+
+      if (selectedFiles.length === 0) {
+        showMessage('Please upload at least one video clip first.', 'error');
         return;
       }
 
-      for (const scene of scenes) {
-        const card = document.createElement('div');
-        card.className = 'scene';
+      isProcessing = true;
+      makeMovieBtn.disabled = true;
+      buttonText.textContent = 'Combining your clips…';
+      downloadBtn.classList.remove('visible');
 
-        const heading = document.createElement('strong');
-        heading.textContent = 'Scene ' + scene.number;
+      showMessage(
+        'Uploading your clips and assembling the movie. Please keep this page open.',
+        'info'
+      );
 
-        const description = document.createElement('p');
-        description.textContent = scene.description;
+      const formData = new FormData();
 
-        card.append(heading, description);
-
-        if (scene.video) {
-          const link = document.createElement('a');
-
-          link.href = scene.video;
-          link.target = '_blank';
-          link.rel = 'noopener';
-          link.textContent = 'Open generated video';
-
-          card.appendChild(link);
-        }
-
-        sceneList.appendChild(card);
-      }
-    }
-
-    async function pollJob(jobId) {
-      if (polling) return;
-
-      polling = true;
+      selectedFiles.forEach(file => {
+        formData.append('videos', file, file.name);
+      });
 
       try {
-        while (true) {
-          const response = await fetch(
-            '/api/jobs/' + encodeURIComponent(jobId)
-          );
-
-          const job = await response.json();
-
-          if (!response.ok) {
-            throw new Error(
-              job.error || 'Could not check generation status.'
-            );
-          }
-
-          updateProgress(
-            job.progress,
-            job.message || job.status
-          );
-
-          renderScenes(job.scenes || []);
-
-          if (job.status === 'completed') {
-            if (job.movieUrl) {
-              const video = document.createElement('video');
-
-              video.controls = true;
-              video.preload = 'metadata';
-              video.src = job.movieUrl;
-
-              preview.replaceChildren(video);
-
-              const link = document.createElement('a');
-
-              link.href = job.movieUrl;
-              link.download = 'cineforge-movie.mp4';
-              link.textContent = '⬇ Download Movie';
-
-              resultActions.replaceChildren(link);
-            }
-
-            showNotice(
-              'Your movie generation has completed.',
-              'success'
-            );
-
-            break;
-          }
-
-          if (job.status === 'failed') {
-            showNotice(
-              job.message || 'Generation failed.',
-              'error'
-            );
-
-            break;
-          }
-
-          await new Promise(resolve => setTimeout(resolve, 3000));
-        }
-      } catch (error) {
-        showNotice(error.message, 'error');
-      } finally {
-        polling = false;
-        generateBtn.disabled = false;
-        generateBtn.textContent = '✨ Generate My Movie';
-      }
-    }
-
-    form.addEventListener('submit', async event => {
-      event.preventDefault();
-
-      if (polling) return;
-
-      notice.className = 'notice';
-      notice.textContent = '';
-
-      resultActions.replaceChildren();
-
-      preview.innerHTML = `
-        <div class="preview-placeholder">
-          <div class="icon">🎥</div>
-          <strong>Preparing your movie...</strong>
-          <div>Waiting for the generation server.</div>
-        </div>
-      `;
-
-      generateBtn.disabled = true;
-      generateBtn.textContent = 'Generating...';
-
-      updateProgress(0, 'Sending your movie request');
-
-      try {
-        const story = document.getElementById('story').value.trim();
-
-        const scenes = story
-          .split(/\n\s*\n/)
-          .map(text => text.trim())
-          .filter(Boolean);
-
-        const maxScenes = Number(
-          document.getElementById('sceneCount').value
-        );
-
-        if (scenes.length > maxScenes) {
-          throw new Error(
-            `You entered ${scenes.length} scenes, but selected a maximum of ${maxScenes}. ` +
-            'Choose a larger limit or remove extra paragraphs.'
-          );
-        }
-
-        const soundPrompt =
-          document.getElementById('soundPrompt').value.trim();
-
-        const payload = {
-          title: document.getElementById('title').value.trim(),
-          story,
-          style: document.getElementById('style').value,
-
-          scenes: scenes.map(description => ({
-            description,
-            sound: soundPrompt
-          }))
-        };
-
-        const response = await fetch('/api/generate', {
+        // Do not manually set Content-Type: the browser must add
+        // the multipart/form-data boundary itself.
+        const response = await fetch('/api/merge', {
           method: 'POST',
-
-          headers: {
-            'Content-Type': 'application/json'
-          },
-
-          body: JSON.stringify(payload)
+          body: formData
         });
 
-        const data = await response.json();
+        const data = await response.json().catch(() => ({}));
 
         if (!response.ok) {
-          throw new Error(
-            data.error || 'Could not start generation.'
-          );
+          throw new Error(data.error || 'The server could not assemble your movie.');
         }
 
-        currentJobId = data.jobId;
+        if (!data.movieUrl) {
+          throw new Error('The server did not return a movie download link.');
+        }
 
-        showNotice(
-          'Your movie request has been accepted. ' +
-          'Generation may take several minutes and consume API credits.',
+        const movieUrl = new URL(data.movieUrl, window.location.origin).href;
+
+        if (movieObjectUrl) {
+          URL.revokeObjectURL(movieObjectUrl);
+          movieObjectUrl = null;
+        }
+
+        moviePlayer.src = movieUrl;
+        moviePlayer.style.display = 'block';
+        placeholder.style.display = 'none';
+
+        downloadBtn.href = movieUrl;
+        downloadBtn.download =
+          (movieTitle.value.trim() || 'cineforge-movie')
+            .replace(/[<>:"/\\|?*\x00-\x1F]/g, '-')
+            .slice(0, 90) + '.mp4';
+
+        downloadBtn.classList.add('visible');
+        previewTitle.textContent = movieTitle.value.trim() || 'Untitled Movie';
+        sceneCount.textContent =
+          (data.clipsCombined ?? selectedFiles.length) + ' clips';
+
+        showMessage(
+          'Success! Your clips have been assembled. Play the movie in the preview or download the MP4.',
           'success'
         );
 
-        await pollJob(currentJobId);
-
       } catch (error) {
-        showNotice(error.message, 'error');
+        console.error('Movie assembly failed:', error);
 
-        generateBtn.disabled = false;
-        generateBtn.textContent = '✨ Generate My Movie';
+        showMessage(
+          error.message ||
+          'Could not connect to the movie server. Check that your backend is running.',
+          'error'
+        );
+      } finally {
+        isProcessing = false;
+        makeMovieBtn.disabled = false;
+        buttonText.textContent = 'Combine My Movie';
       }
     });
 
+    // Check whether the backend is reachable.
     fetch('/api/health')
-      .then(response => response.json())
-      .then(data => {
-        if (!data.videoProviderConfigured) {
-          showNotice(
-            'The video API has not been configured on the server yet.',
-            'error'
-          );
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Server health check failed');
         }
+
+        return response.json();
       })
-      .catch(() => {
-        showNotice(
-          'The generation server is not connected yet. ' +
-          'The interface will work when the backend is running.',
-          'error'
-        );
+      .then(data => {
+        console.log('CineForge backend:', data);
+      })
+      .catch(error => {
+        console.warn('CineForge backend is not reachable yet:', error);
       });
+
+    window.addEventListener('beforeunload', () => {
+      if (movieObjectUrl) {
+        URL.revokeObjectURL(movieObjectUrl);
+      }
+    });
   </script>
 </body>
 </html>
