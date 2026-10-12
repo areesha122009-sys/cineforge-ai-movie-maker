@@ -7,13 +7,11 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY package.json ./
-
 RUN npm install --omit=dev
 
-COPY src ./src
-COPY public ./public
+COPY . .
 
-RUN mkdir -p /app/output
+RUN mkdir -p /app/output /app/uploads
 
 ENV NODE_ENV=production
 ENV PORT=3000
