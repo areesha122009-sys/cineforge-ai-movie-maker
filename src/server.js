@@ -1,39 +1,52 @@
-import 'dotenv/config';
 import express from 'express';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { nanoid } from 'nanoid';
-import { fal } from '@fal-ai/client';
+import { randomUUID } from 'node:crypto';
+import multer from 'multer';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const OUTPUT = path.join(ROOT, 'output');
+const UPLOADS = path.join(ROOT, 'uploads');
 
 const app = express();
 
-app.use(express.json({ limit: '2mb' }));
+app.use(express.json({ limit: '1mb' }));
 app.use(express.static(path.join(ROOT, 'public')));
 app.use('/output', express.static(OUTPUT));
 
-if (process.env.FAL_KEY) {
-  fal.config({ credentials: process.env.FAL_KEY });
-}
+const storage = multer.diskStorage({
+  destination: (_req, _file, callback) => {
+    callback(null, UPLOADS);
+  },
+  filename: (_req, file, callback) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    callback(null, `${randomUUID()}${ext}`);
+  }
+});
 
-const jobs = new Map();
-const MAX_SCENES = Math.min(
-  8,
-  Math.max(1, Number(process.env.MAX_SCENES || 8))
-);
+const upload = multer({
+  storage,
+  limits: {
+    files: 20,
+    fileSize: 100 * 1024 * 1024
+  },
+  fileFilter: (_req, file, callback) => {
+    const allowed = [
+      '.mp4', '.mov', '.webm', '.m4v', '.avi'
+    ];
 
-function updateJob(id, values) {
-  jobs.set(id, {
-    ...jobs.get(id),
-    ...values,
-    updatedAt: new Date().toISOString()
-  });
-}
+    const ext = path.extname(file.originalname).toLowerCase();
+
+    if (allowed.includes(ext) && file.mimetype.startsWith('video/')) {
+      return callback(null, true);
+    }
+
+    callback(new Error('Upload video files only: MP4, MOV, WEBM, M4V or AVI.'));
+  }
+});
 
 function runFFmpeg(args) {
   return new Promise((resolve, reject) => {
@@ -44,376 +57,136 @@ function runFFmpeg(args) {
     let errors = '';
 
     child.stderr.on('data', data => {
-      errors += data.toString();
-      errors = errors.slice(-5000);
+      errors = (errors + data.toString()).slice(-4000);
     });
 
     child.on('error', reject);
 
     child.on('close', code => {
-      if (code === 0) resolve();
-      else reject(new Error('FFmpeg failed: ' + errors));
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(errors || 'FFmpeg could not assemble the movie.'));
+      }
     });
   });
-}
-
-async function download(url, destination) {
-  const response = await fetch(url);
-
-  if (!response.ok) {
-    throw new Error(`Download failed: ${response.status}`);
-  }
-
-  await fs.writeFile(
-    destination,
-    Buffer.from(await response.arrayBuffer())
-  );
-}
-
-function findURL(data, candidates) {
-  for (const candidate of candidates) {
-    let value = data;
-
-    for (const key of candidate) {
-      value = value?.[key];
-    }
-
-    if (
-      typeof value === 'string' &&
-      value.startsWith('http')
-    ) {
-      return value;
-    }
-  }
-
-  throw new Error(
-    'No media URL returned by the AI provider.'
-  );
-}
-
-async function generateImage(prompt) {
-  const result = await fal.subscribe(
-    process.env.FAL_IMAGE_MODEL || 'fal-ai/flux/schnell',
-    {
-      input: {
-        prompt,
-        image_size: 'landscape_16_9',
-        num_images: 1
-      }
-    }
-  );
-
-  return findURL(result.data, [
-    ['images', 0, 'url']
-  ]);
-}
-
-async function generateVideo(imageURL, prompt) {
-  const result = await fal.subscribe(
-    process.env.FAL_VIDEO_MODEL ||
-      'fal-ai/minimax-video/image-to-video',
-    {
-      input: {
-        prompt,
-        image_url: imageURL
-      },
-      logs: true
-    }
-  );
-
-  return findURL(result.data, [
-    ['video', 'url'],
-    ['video_url']
-  ]);
-}
-
-async function generateSound(prompt, destination) {
-  const key = process.env.ELEVENLABS_API_KEY;
-
-  if (!key) {
-    throw new Error('ElevenLabs API key is missing.');
-  }
-
-  const response = await fetch(
-    'https://api.elevenlabs.io/v1/sound-generation',
-    {
-      method: 'POST',
-      headers: {
-        'xi-api-key': key,
-        'Content-Type': 'application/json',
-        Accept: 'audio/mpeg'
-      },
-      body: JSON.stringify({
-        text: prompt.slice(0, 450),
-        duration_seconds: 8,
-        prompt_influence: 0.55
-      })
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error(
-      'Sound generation failed: ' +
-      response.status + ' ' +
-      (await response.text()).slice(0, 400)
-    );
-  }
-
-  await fs.writeFile(
-    destination,
-    Buffer.from(await response.arrayBuffer())
-  );
 }
 
 app.get('/api/health', (_req, res) => {
   res.json({
     ok: true,
-    videoProviderConfigured: Boolean(process.env.FAL_KEY),
-    soundProviderConfigured: Boolean(
-      process.env.ELEVENLABS_API_KEY
-    ),
-    maxScenes: MAX_SCENES
+    mode: 'video-assembly',
+    message: 'Upload your video clips to assemble a movie.'
   });
 });
 
-app.get('/api/jobs/:id', (req, res) => {
-  const job = jobs.get(req.params.id);
+app.post('/api/merge', upload.array('videos', 20), async (req, res) => {
+  const files = req.files || [];
 
-  if (!job) {
-    return res.status(404).json({
-      error: 'Movie job not found.'
-    });
-  }
-
-  res.json(job);
-});
-
-app.post('/api/generate', async (req, res) => {
-  const {
-    title = 'My AI Movie',
-    story,
-    style = 'cinematic fantasy',
-    scenes
-  } = req.body || {};
-
-  if (!process.env.FAL_KEY) {
+  if (files.length === 0) {
     return res.status(400).json({
-      error: 'Configure FAL_KEY on your server.'
+      error: 'Please upload at least one video clip.'
     });
   }
 
-  if (!process.env.ELEVENLABS_API_KEY) {
-    return res.status(400).json({
-      error: 'Configure ELEVENLABS_API_KEY on your server.'
-    });
-  }
+  const jobId = randomUUID();
+  const jobDir = path.join(OUTPUT, jobId);
 
-  if (
-    typeof story !== 'string' ||
-    story.trim().length < 20
-  ) {
-    return res.status(400).json({
-      error: 'Enter a story of at least 20 characters.'
-    });
-  }
+  try {
+    await fs.mkdir(jobDir, { recursive: true });
 
-  const list = Array.isArray(scenes)
-    ? scenes
-    : story
-        .split(/\n\s*\n/)
-        .filter(part => part.trim());
+    const normalized = [];
 
-  const cleanScenes = list
-    .map(item => {
-      if (typeof item === 'string') {
-        return {
-          description: item.trim(),
-          sound: `Cinematic sound effects for ${item.trim()}`
-        };
-      }
+    for (let i = 0; i < files.length; i++) {
+      const outputFile = path.join(
+        jobDir,
+        `scene-${String(i + 1).padStart(2, '0')}.mp4`
+      );
 
-      return {
-        description: String(item.description || '').trim(),
-        sound: String(item.sound || 'Cinematic ambience')
-      };
-    })
-    .filter(item => item.description);
-
-  if (
-    cleanScenes.length === 0 ||
-    cleanScenes.length > MAX_SCENES
-  ) {
-    return res.status(400).json({
-      error: `Enter between 1 and ${MAX_SCENES} scenes.`
-    });
-  }
-
-  const id = nanoid(10);
-  const directory = path.join(OUTPUT, id);
-
-  await fs.mkdir(directory, { recursive: true });
-
-  updateJob(id, {
-    id,
-    title,
-    status: 'queued',
-    progress: 0,
-    scenes: [],
-    message: 'Movie queued'
-  });
-
-  res.status(202).json({ jobId: id });
-
-  (async () => {
-    const clips = [];
-    const completed = [];
-
-    try {
-      updateJob(id, {
-        status: 'running',
-        message: 'Starting generation'
-      });
-
-      for (let i = 0; i < cleanScenes.length; i++) {
-        const scene = cleanScenes[i];
-        const name = `scene-${String(i + 1).padStart(2, '0')}`;
-
-        updateJob(id, {
-          message: `Generating image for scene ${i + 1}`
-        });
-
-        const imagePrompt = `
-${style}, cinematic widescreen movie still.
-
-Story:
-${story.slice(0, 800)}
-
-Current scene:
-${scene.description}
-
-Keep the characters' faces, hairstyles,
-clothing, and colors consistent.
-
-Detailed environment, cinematic lighting,
-no text, no subtitles, no logos.
-        `.trim();
-
-        const imageURL = await generateImage(imagePrompt);
-        const imagePath = path.join(directory, `${name}.jpg`);
-
-        await download(imageURL, imagePath);
-
-        updateJob(id, {
-          message: `Generating video for scene ${i + 1}`
-        });
-
-        const videoURL = await generateVideo(
-          imageURL,
-          `${style}. Animate this scene naturally: ` +
-          scene.description +
-          '. Preserve the same characters and clothing. ' +
-          'Smooth cinematic camera movement.'
-        );
-
-        const rawPath = path.join(directory, `${name}-raw.mp4`);
-
-        await download(videoURL, rawPath);
-
-        updateJob(id, {
-          message: `Generating sound for scene ${i + 1}`
-        });
-
-        const soundPath = path.join(directory, `${name}.mp3`);
-
-        await generateSound(scene.sound, soundPath);
-
-        const clipPath = path.join(directory, `${name}.mp4`);
-
-        // Add generated sound to the generated video.
-        await runFFmpeg([
-          '-y',
-          '-i', rawPath,
-          '-stream_loop', '-1',
-          '-i', soundPath,
-          '-map', '0:v:0',
-          '-map', '1:a:0',
-          '-c:v', 'libx264',
-          '-preset', 'veryfast',
-          '-pix_fmt', 'yuv420p',
-          '-c:a', 'aac',
-          '-shortest',
-          '-movflags', '+faststart',
-          clipPath
-        ]);
-
-        clips.push(clipPath);
-
-        completed.push({
-          number: i + 1,
-          description: scene.description,
-          video: `/output/${id}/${name}.mp4`,
-          image: `/output/${id}/${name}.jpg`,
-          sound: `/output/${id}/${name}.mp3`
-        });
-
-        updateJob(id, {
-          progress: Math.round(
-            ((i + 1) / cleanScenes.length) * 90
-          ),
-          scenes: completed,
-          message: `Completed scene ${i + 1}`
-        });
-      }
-
-      updateJob(id, {
-        message: 'Assembling the final movie'
-      });
-
-      const concatPath = path.join(directory, 'concat.txt');
-
-      const concatText = clips
-        .map(file => {
-          return `file '${file.replace(/'/g, "'\\''")}'`;
-        })
-        .join('\n');
-
-      await fs.writeFile(concatPath, concatText);
-
-      const finalPath = path.join(directory, 'movie.mp4');
-
+      // Convert clips to a common format for reliable joining.
       await runFFmpeg([
         '-y',
-        '-f', 'concat',
-        '-safe', '0',
-        '-i', concatPath,
-        '-c', 'copy',
+        '-i', files[i].path,
+        '-map', '0:v:0',
+        '-map', '0:a:0?',
+        '-vf', 'scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,fps=24',
+        '-c:v', 'libx264',
+        '-preset', 'ultrafast',
+        '-pix_fmt', 'yuv420p',
+        '-c:a', 'aac',
+        '-ar', '44100',
+        '-ac', '2',
         '-movflags', '+faststart',
-        finalPath
+        outputFile
       ]);
 
-      updateJob(id, {
-        status: 'completed',
-        progress: 100,
-        message: 'Your movie is ready!',
-        movieUrl: `/output/${id}/movie.mp4`,
-        scenes: completed
-      });
-    } catch (error) {
-      console.error(error);
-
-      updateJob(id, {
-        status: 'failed',
-        message: error.message || 'Generation failed',
-        scenes: completed
-      });
+      normalized.push(outputFile);
     }
-  })();
+
+    const listFile = path.join(jobDir, 'concat.txt');
+
+    const listContents = normalized
+      .map(file => `file '${file.replace(/'/g, "'\\''")}'`)
+      .join('\n');
+
+    await fs.writeFile(listFile, listContents);
+
+    const moviePath = path.join(jobDir, 'movie.mp4');
+
+    await runFFmpeg([
+      '-y',
+      '-f', 'concat',
+      '-safe', '0',
+      '-i', listFile,
+      '-c', 'copy',
+      '-movflags', '+faststart',
+      moviePath
+    ]);
+
+    res.json({
+      ok: true,
+      message: 'Your movie is ready!',
+      movieUrl: `/output/${jobId}/movie.mp4`,
+      downloadUrl: `/output/${jobId}/movie.mp4`,
+      clipsCombined: files.length
+    });
+  } catch (error) {
+    console.error('Movie assembly error:', error);
+
+    await fs.rm(jobDir, { recursive: true, force: true }).catch(() => {});
+
+    res.status(500).json({
+      error: 'Movie assembly failed. Try smaller MP4 clips.',
+      details: error.message
+    });
+  } finally {
+    await Promise.all(
+      files.map(file =>
+        fs.rm(file.path, { force: true }).catch(() => {})
+      )
+    );
+  }
+});
+
+app.use((error, _req, res, _next) => {
+  if (error instanceof multer.MulterError) {
+    return res.status(400).json({
+      error: error.code === 'LIMIT_FILE_SIZE'
+        ? 'Each clip must be smaller than 100 MB.'
+        : 'Too many files or an upload limit was exceeded.'
+    });
+  }
+
+  res.status(400).json({
+    error: error.message || 'The request failed.'
+  });
 });
 
 await fs.mkdir(OUTPUT, { recursive: true });
+await fs.mkdir(UPLOADS, { recursive: true });
 
 const PORT = Number(process.env.PORT || 3000);
 
-app.listen(PORT, () => {
-  console.log(`CineForge AI running on port ${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`CineForge is running on port ${PORT}`);
 });
