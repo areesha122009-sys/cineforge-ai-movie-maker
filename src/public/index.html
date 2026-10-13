@@ -1,28 +1,26 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0b0718">
-  <title>CineForge AI — Movie Maker</title>
+  <title>CineForge AI — Movie Generator</title>
 
   <style>
     :root {
       --bg: #0b0718;
       --panel: #151027;
-      --panel2: #1c1534;
       --purple: #a78bfa;
       --pink: #f0abfc;
       --text: #f7f3ff;
       --muted: #aaa0c2;
-      --border: rgba(192, 163, 255, .17);
+      --border: rgba(192,163,255,.2);
       --green: #86efac;
       --red: #fda4af;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -32,32 +30,26 @@
         radial-gradient(ellipse at 15% 0%, #30205a 0%, transparent 40%),
         radial-gradient(ellipse at 100% 35%, #291343 0%, transparent 35%),
         var(--bg);
-      font-family: Inter, system-ui, -apple-system, Arial, sans-serif;
+      font-family: Inter, system-ui, Arial, sans-serif;
     }
 
-    button, input {
-      font: inherit;
-    }
-
-    button {
-      cursor: pointer;
-    }
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; }
 
     .topbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 22px 6%;
+      gap: 16px;
+      padding: 20px 6%;
       border-bottom: 1px solid var(--border);
-      background: rgba(11, 7, 24, .6);
     }
 
     .brand {
       display: flex;
       align-items: center;
       gap: 12px;
-      font-weight: 800;
-      font-size: 20px;
+      font-weight: 850;
       letter-spacing: 1px;
     }
 
@@ -67,428 +59,279 @@
       width: 43px;
       height: 43px;
       border-radius: 13px;
-      background: linear-gradient(135deg, #a78bfa, #e879f9);
+      background: linear-gradient(135deg,#a78bfa,#e879f9);
       color: #160a2b;
       font-size: 23px;
     }
 
-    .status-pill {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.035);
-      padding: 9px 14px;
-      border-radius: 30px;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--green);
-      box-shadow: 0 0 10px var(--green);
-    }
-
-    .hero {
-      max-width: 1100px;
-      margin: auto;
-      padding: 60px 24px 35px;
-      text-align: center;
-    }
-
-    .eyebrow {
-      display: inline-block;
-      color: var(--pink);
-      border: 1px solid rgba(240,171,252,.24);
-      background: rgba(192,132,252,.08);
-      border-radius: 30px;
-      padding: 8px 15px;
-      font-size: 12px;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-    }
-
-    h1 {
-      font-size: clamp(36px, 6vw, 66px);
-      line-height: 1.08;
-      letter-spacing: -2px;
-      margin: 24px 0 18px;
-    }
-
-    .gradient-text {
-      background: linear-gradient(90deg, #c4b5fd, #f0abfc, #c4b5fd);
+    .gradient {
+      background: linear-gradient(90deg,#c4b5fd,#f0abfc);
       background-clip: text;
       -webkit-background-clip: text;
       color: transparent;
     }
 
-    .hero p {
+    .status {
       color: var(--muted);
-      max-width: 650px;
-      margin: auto;
-      line-height: 1.8;
-      font-size: 15px;
+      border: 1px solid var(--border);
+      padding: 9px 13px;
+      border-radius: 25px;
+      font-size: 12px;
     }
 
-    .workspace {
-      display: grid;
-      grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
-      gap: 24px;
-      max-width: 1200px;
-      padding: 20px 24px 70px;
+    .hero {
+      text-align: center;
+      max-width: 850px;
+      padding: 60px 22px 30px;
       margin: auto;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      color: var(--pink);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      padding: 8px 14px;
+      font-size: 11px;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      font-size: clamp(38px,6vw,66px);
+      line-height: 1.08;
+      letter-spacing: -2px;
+      margin: 22px 0 18px;
+    }
+
+    .hero p {
+      color: var(--muted);
+      line-height: 1.8;
+      font-size: 14px;
+    }
+
+    main {
+      width: min(1000px, calc(100% - 32px));
+      margin: 10px auto 65px;
     }
 
     .card {
+      padding: clamp(20px,4vw,34px);
       border: 1px solid var(--border);
-      background: linear-gradient(145deg, rgba(28,21,52,.95), rgba(17,12,32,.96));
       border-radius: 22px;
-      padding: 27px;
-      box-shadow: 0 20px 70px rgba(0,0,0,.18);
-      min-width: 0;
+      background: linear-gradient(145deg,rgba(28,21,52,.97),rgba(17,12,32,.97));
+      box-shadow: 0 20px 70px rgba(0,0,0,.2);
     }
 
-    .card-heading {
+    .heading {
       display: flex;
       align-items: center;
       gap: 13px;
-      margin-bottom: 24px;
+      margin-bottom: 25px;
     }
 
     .number {
       display: grid;
       place-items: center;
+      width: 40px;
+      height: 40px;
       flex-shrink: 0;
-      width: 38px;
-      height: 38px;
       border-radius: 12px;
       background: rgba(167,139,250,.15);
       color: var(--purple);
-      font-weight: 800;
+      font-weight: 850;
     }
 
-    h2 {
-      font-size: 19px;
-      margin: 0 0 5px;
-    }
+    h2 { margin: 0 0 5px; font-size: 20px; }
+    .muted { color: var(--muted); font-size: 12px; }
 
-    .subtitle {
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .field-label {
+    label {
       display: block;
-      margin: 22px 0 10px;
+      margin: 22px 0 9px;
+      font-weight: 750;
       font-size: 13px;
-      font-weight: 700;
     }
 
-    .text-input {
+    input, textarea, select {
       width: 100%;
-      background: rgba(8,5,18,.6);
+      padding: 14px;
+      border-radius: 12px;
       border: 1px solid var(--border);
       color: var(--text);
-      border-radius: 12px;
-      padding: 14px;
+      background: rgba(8,5,18,.7);
       outline: none;
     }
 
-    .text-input:focus {
+    textarea {
+      min-height: 190px;
+      resize: vertical;
+      line-height: 1.75;
+    }
+
+    input:focus, textarea:focus, select:focus {
       border-color: var(--purple);
       box-shadow: 0 0 0 3px rgba(167,139,250,.09);
     }
 
-    .upload-zone {
-      display: block;
-      border: 1.5px dashed rgba(192,163,255,.4);
-      background: rgba(167,139,250,.045);
-      border-radius: 17px;
-      padding: 32px 18px;
-      text-align: center;
-      transition: .2s;
-      cursor: pointer;
+    select option {
+      background: #151027;
+      color: white;
     }
 
-    .upload-zone:hover,
-    .upload-zone.dragover {
-      background: rgba(167,139,250,.12);
-      border-color: var(--purple);
-    }
-
-    .upload-icon {
-      font-size: 36px;
-      margin-bottom: 12px;
-    }
-
-    .upload-title {
-      font-size: 15px;
-      font-weight: 750;
-      margin-bottom: 8px;
-    }
-
-    .upload-hint {
-      font-size: 12px;
-      line-height: 1.7;
-      color: var(--muted);
-    }
-
-    #videoFiles {
-      display: none;
-    }
-
-    .file-list {
-      margin-top: 14px;
+    .grid {
       display: grid;
-      gap: 9px;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
     }
 
-    .file-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      padding: 12px;
-      border: 1px solid var(--border);
-      border-radius: 11px;
-      background: rgba(255,255,255,.025);
-      font-size: 12px;
-    }
-
-    .file-name {
-      overflow-wrap: anywhere;
-    }
-
-    .file-size {
+    .hint {
       color: var(--muted);
-      white-space: nowrap;
+      font-size: 11px;
+      line-height: 1.7;
+      margin-top: 8px;
     }
 
-    .remove-btn {
-      border: 0;
-      background: transparent;
-      color: var(--red);
-      font-size: 17px;
-      padding: 3px 6px;
-    }
-
-    .info-box {
+    .checkrow {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
       margin-top: 19px;
       padding: 14px;
-      border-radius: 12px;
-      background: rgba(167,139,250,.07);
+      background: rgba(167,139,250,.06);
       border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .checkrow input {
+      width: 17px;
+      height: 17px;
+      margin-top: 2px;
+      accent-color: #a78bfa;
+    }
+
+    .checkrow label {
+      margin: 0;
+      line-height: 1.7;
+      font-weight: 500;
       color: var(--muted);
       font-size: 12px;
-      line-height: 1.8;
     }
 
-    .info-box strong {
-      color: var(--text);
-    }
-
-    .primary-btn {
+    .primary {
       width: 100%;
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       gap: 10px;
+      padding: 16px;
+      margin-top: 23px;
       border: 0;
       border-radius: 13px;
-      margin-top: 23px;
-      padding: 16px;
+      background: linear-gradient(100deg,#c4b5fd,#f0abfc);
       color: #190c2b;
       font-weight: 850;
-      background: linear-gradient(100deg, #c4b5fd, #f0abfc);
-      box-shadow: 0 8px 30px rgba(192,132,252,.12);
-      transition: transform .2s, opacity .2s;
+      transition: .2s;
     }
 
-    .primary-btn:hover:not(:disabled) {
-      transform: translateY(-2px);
-    }
-
-    .primary-btn:disabled {
-      cursor: not-allowed;
-      opacity: .55;
-    }
+    .primary:hover { transform: translateY(-2px); }
+    .primary:disabled { opacity: .6; cursor: wait; }
 
     .message {
       display: none;
       margin-top: 17px;
+      padding: 15px;
       border-radius: 12px;
-      padding: 13px 15px;
       font-size: 13px;
-      line-height: 1.7;
+      line-height: 1.8;
       overflow-wrap: anywhere;
     }
 
-    .message.show {
-      display: block;
-    }
-
+    .message.show { display: block; }
     .message.info {
       color: #ddd6fe;
       background: rgba(139,92,246,.12);
-      border: 1px solid rgba(167,139,250,.2);
+      border: 1px solid rgba(167,139,250,.25);
     }
-
+    .message.error {
+      color: var(--red);
+      background: rgba(244,63,94,.08);
+      border: 1px solid rgba(253,164,175,.2);
+    }
     .message.success {
       color: var(--green);
       background: rgba(34,197,94,.08);
       border: 1px solid rgba(134,239,172,.2);
     }
 
-    .message.error {
-      color: var(--red);
-      background: rgba(244,63,94,.08);
-      border: 1px solid rgba(253,164,175,.2);
-    }
-
-    .preview-screen {
-      min-height: 285px;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      background:
-        radial-gradient(ellipse at center, rgba(139,92,246,.18), transparent 60%),
-        #090611;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-    }
-
-    .preview-placeholder {
+    .preview {
+      margin-top: 23px;
+      min-height: 230px;
+      display: grid;
+      place-items: center;
       text-align: center;
-      padding: 30px;
+      padding: 28px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background:
+        radial-gradient(ellipse at center,rgba(139,92,246,.18),transparent 65%),
+        #090611;
     }
 
-    .preview-symbol {
-      font-size: 55px;
-      opacity: .8;
-      margin-bottom: 16px;
-    }
-
-    .preview-placeholder h3 {
-      font-size: 17px;
-      margin: 0 0 10px;
-    }
-
-    .preview-placeholder p {
+    .preview .symbol { font-size: 48px; margin-bottom: 14px; }
+    .preview p {
+      max-width: 440px;
       color: var(--muted);
       font-size: 12px;
-      line-height: 1.7;
-      max-width: 270px;
-      margin: auto;
+      line-height: 1.8;
     }
 
     #moviePlayer {
       display: none;
       width: 100%;
-      max-height: 550px;
-      background: #000;
+      max-height: 560px;
+      margin-top: 22px;
+      background: black;
+      border-radius: 14px;
     }
 
-    .preview-meta {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin: 20px 0;
-    }
-
-    .meta-label {
+    .note {
+      margin-top: 22px;
+      padding: 15px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
       color: var(--muted);
       font-size: 12px;
+      line-height: 1.8;
     }
 
-    .meta-value {
-      font-size: 13px;
-      font-weight: 750;
-      margin-top: 5px;
-    }
+    .note strong { color: var(--text); }
 
-    .download-btn {
+    .download {
       display: none;
-      width: 100%;
+      margin-top: 15px;
+      padding: 14px;
       text-align: center;
       text-decoration: none;
       border-radius: 12px;
-      padding: 14px;
       color: var(--text);
-      background: rgba(167,139,250,.13);
-      border: 1px solid rgba(167,139,250,.3);
-      font-size: 13px;
-      font-weight: 750;
-    }
-
-    .download-btn.visible {
-      display: block;
-    }
-
-    .steps {
-      display: grid;
-      gap: 14px;
-      margin-top: 24px;
-    }
-
-    .step {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      font-size: 12px;
-      line-height: 1.7;
-      color: var(--muted);
-    }
-
-    .step-icon {
-      flex-shrink: 0;
-      width: 28px;
-      height: 28px;
-      display: grid;
-      place-items: center;
-      border-radius: 9px;
+      border: 1px solid var(--border);
       background: rgba(167,139,250,.12);
-      color: var(--purple);
     }
 
-    .step strong {
-      display: block;
-      color: var(--text);
-      margin-bottom: 2px;
-    }
+    .download.visible { display: block; }
 
     footer {
       text-align: center;
-      padding: 25px;
       color: #7e729a;
+      padding: 25px;
       border-top: 1px solid var(--border);
       font-size: 12px;
     }
 
-    @media (max-width: 800px) {
-      .workspace {
-        grid-template-columns: 1fr;
-      }
-
-      .hero {
-        padding-top: 42px;
-      }
-
-      .card {
-        padding: 21px;
-      }
-
-      .topbar {
-        padding: 16px 20px;
-      }
-
-      .brand {
-        font-size: 16px;
-      }
+    @media(max-width:650px) {
+      .grid { grid-template-columns: 1fr; gap: 0; }
+      .hero { padding-top: 40px; }
+      .status { font-size: 10px; }
     }
   </style>
 </head>
@@ -497,473 +340,243 @@
   <header class="topbar">
     <div class="brand">
       <div class="logo">▶</div>
-      <span>CINEFORGE <span class="gradient-text">AI</span></span>
+      <span>CINEFORGE <span class="gradient">AI</span></span>
     </div>
-
-    <div class="status-pill">
-      <span class="dot"></span>
-      <span>Movie Studio</span>
-    </div>
+    <div class="status">✦ Prompt-Based Movie Studio</div>
   </header>
 
   <section class="hero">
-    <span class="eyebrow">Your personal movie studio</span>
-
-    <h1>
-      Bring Your Clips<br>
-      <span class="gradient-text">Together as a Movie.</span>
-    </h1>
-
+    <span class="eyebrow">From imagination to cinema</span>
+    <h1>Describe Your Story.<br><span class="gradient">Create Your Movie.</span></h1>
     <p>
-      Upload your video scenes, combine them into one movie,
-      preview the finished result, and download your MP4 file.
+      Describe your film, its characters, and its world.
+      CineForge is designed for prompt-based AI movie creation.
     </p>
   </section>
 
-  <main class="workspace">
-
+  <main>
     <section class="card">
-      <div class="card-heading">
+      <div class="heading">
         <div class="number">01</div>
         <div>
-          <h2>Build Your Movie</h2>
-          <div class="subtitle">Upload the scenes you want to combine</div>
+          <h2>Your Movie</h2>
+          <div class="muted">Describe the film you want to create</div>
         </div>
       </div>
 
-      <label class="field-label" for="movieTitle">Movie title</label>
+      <label for="movieTitle">Movie title</label>
+      <input id="movieTitle" maxlength="100"
+        placeholder="The Queen of the Castle"
+        value="The Queen of the Castle">
 
-      <input
-        class="text-input"
-        id="movieTitle"
-        type="text"
-        maxlength="100"
-        placeholder="e.g. The Queen of the Castle"
-      >
+      <label for="moviePrompt">Describe your entire movie</label>
+      <textarea id="moviePrompt" maxlength="12000"
+        placeholder="Describe your plot, characters, setting, important events, ending, visual style, dialogue, and music...">Create a cinematic fantasy adventure called The Queen of the Castle.
 
-      <label class="field-label">Upload your video scenes</label>
+Queen Elowen is a kind and courageous queen whose trusted former friend betrays her and takes control of her castle. Forced to escape, Elowen finds shelter in a forest, where a young girl named Lina lives in a small house with animals.
 
-      <label class="upload-zone" id="dropZone" for="videoFiles">
-        <div class="upload-icon">🎬</div>
-        <div class="upload-title">Choose your video clips</div>
-        <div class="upload-hint">
-          Click to browse or drag and drop videos here<br>
-          MP4, MOV, WEBM, M4V or AVI<br>
-          Up to 20 clips · 100 MB per clip
+Lina helps the queen survive. At first they are strangers, but through reading, sharing stories, learning history, leadership, and protecting one another, they become a family. Lina's human friends later join them to help reclaim the kingdom.
+
+The final battle tests their courage, friendship, and loyalty. Lina makes a brave sacrifice to protect others. Tell this as one connected feature film with an emotional, meaningful ending.
+
+Use beautiful cinematic fantasy environments, detailed castle interiors, misty forests, expressive performances, natural dialogue, orchestral music, and coherent transitions. Keep Queen Elowen and Lina visually consistent throughout every scene. Do not rename the characters or turn the film into separate episodes.</textarea>
+      <div class="hint">Be specific about the story, characters, scenes, dialogue, soundtrack, and ending.</div>
+
+      <div class="grid">
+        <div>
+          <label for="genre">Genre</label>
+          <select id="genre">
+            <option>Fantasy Adventure</option>
+            <option>Drama</option>
+            <option>Fantasy Drama</option>
+            <option>Mystery</option>
+            <option>Science Fiction</option>
+            <option>Family Adventure</option>
+          </select>
         </div>
-      </label>
 
-      <input
-        id="videoFiles"
-        type="file"
-        accept=".mp4,.mov,.webm,.m4v,.avi,video/mp4,video/quicktime,video/webm,video/x-m4v,video/x-msvideo"
-        multiple
-      >
+        <div>
+          <label for="style">Visual style</label>
+          <select id="style">
+            <option>Cinematic Realism</option>
+            <option>Epic Fantasy Cinema</option>
+            <option>Animated Fantasy</option>
+            <option>Photorealistic Film</option>
+            <option>Dreamlike Storybook</option>
+          </select>
+        </div>
 
-      <div class="file-list" id="fileList"></div>
+        <div>
+          <label for="duration">Target movie length</label>
+          <select id="duration">
+            <option value="1">1 minute test</option>
+            <option value="5">5 minutes</option>
+            <option value="10">10 minutes</option>
+            <option value="30">30 minutes</option>
+            <option value="90" selected>90 minutes (feature film)</option>
+          </select>
+          <div class="hint">Longer films require many generated clips and substantial processing.</div>
+        </div>
 
-      <div class="info-box">
-        <strong>Important:</strong> Upload real video clips generated
-        by a video tool or recorded by you. CineForge will process
-        and join them in the order shown below. It does not generate
-        new AI video scenes from a text prompt in this version.
+        <div>
+          <label for="audio">Audio</label>
+          <select id="audio">
+            <option>Dialogue, music and sound effects</option>
+            <option>Music and sound effects</option>
+            <option>Silent film</option>
+          </select>
+        </div>
       </div>
 
-      <button class="primary-btn" id="makeMovieBtn" type="button">
+      <div class="checkrow">
+        <input type="checkbox" id="consistent" checked>
+        <label for="consistent">
+          <strong>Character consistency</strong><br>
+          Request consistent faces, hairstyles, clothing, and character identities across scenes. Actual consistency depends on the connected AI video service.
+        </label>
+      </div>
+
+      <button class="primary" id="generateBtn" type="button">
         <span>✦</span>
-        <span id="buttonText">Combine My Movie</span>
+        <span id="buttonText">Generate AI Movie</span>
       </button>
 
-      <div class="message" id="statusMessage" role="status" aria-live="polite"></div>
+      <div id="statusMessage" class="message" role="status" aria-live="polite"></div>
+
+      <div class="note">
+        <strong>Generation service required:</strong>
+        This interface is ready to collect your movie instructions, but this website
+        does not yet have a real AI video-generation provider connected. Clicking
+        Generate will check the backend and report whether a provider is configured.
+        It will not create a fake movie or claim that generation succeeded.
+      </div>
     </section>
 
-    <section class="card">
-      <div class="card-heading">
+    <section class="card" style="margin-top:24px">
+      <div class="heading">
         <div class="number">02</div>
         <div>
           <h2>Movie Preview</h2>
-          <div class="subtitle">Your assembled movie will appear here</div>
+          <div class="muted">Your real generated video will appear here when available</div>
         </div>
       </div>
 
-      <div class="preview-screen">
-        <div class="preview-placeholder" id="placeholder">
-          <div class="preview-symbol">🎞️</div>
-          <h3>Your story starts here</h3>
-          <p>
-            Select your video scenes, then click
-            “Combine My Movie” to create a single MP4 file.
+      <div class="preview" id="preview">
+        <div>
+          <div class="symbol">🎬</div>
+          <h3 id="previewTitle">The Queen of the Castle</h3>
+          <p id="previewText">
+            Your movie has not been generated yet. Enter your prompt and use
+            Generate AI Movie to check the generation service.
           </p>
         </div>
-
-        <video
-          id="moviePlayer"
-          controls
-          playsinline
-          preload="metadata"
-        ></video>
       </div>
 
-      <div class="preview-meta">
-        <div>
-          <div class="meta-label">MOVIE TITLE</div>
-          <div class="meta-value" id="previewTitle">Untitled Movie</div>
-        </div>
+      <video id="moviePlayer" controls playsinline></video>
 
-        <div style="text-align:right">
-          <div class="meta-label">SCENES COMBINED</div>
-          <div class="meta-value" id="sceneCount">0 clips</div>
-        </div>
-      </div>
-
-      <a
-        id="downloadBtn"
-        class="download-btn"
-        href="#"
-        download="cineforge-movie.mp4"
-      >
-        ↓ &nbsp; Download Your Movie (MP4)
+      <a id="downloadBtn" class="download" href="#" download="cineforge-movie.mp4">
+        ↓ Download Generated Movie
       </a>
-
-      <div class="steps">
-        <div class="step">
-          <div class="step-icon">1</div>
-          <div>
-            <strong>Upload your clips</strong>
-            Select your scenes in the order you want them to appear.
-          </div>
-        </div>
-
-        <div class="step">
-          <div class="step-icon">2</div>
-          <div>
-            <strong>Combine your scenes</strong>
-            The server converts clips to a consistent video format
-            and joins them together.
-          </div>
-        </div>
-
-        <div class="step">
-          <div class="step-icon">3</div>
-          <div>
-            <strong>Preview and download</strong>
-            Watch your finished movie and save the MP4 to your device.
-          </div>
-        </div>
-      </div>
     </section>
-
   </main>
 
-  <footer>
-    CINEFORGE AI · Your stories, your creativity.
-  </footer>
+  <footer>CINEFORGE AI · Your stories, your creativity.</footer>
 
   <script>
-    const fileInput = document.getElementById('videoFiles');
-    const dropZone = document.getElementById('dropZone');
-    const fileList = document.getElementById('fileList');
-    const makeMovieBtn = document.getElementById('makeMovieBtn');
+    const titleInput = document.getElementById('movieTitle');
+    const promptInput = document.getElementById('moviePrompt');
+    const generateBtn = document.getElementById('generateBtn');
     const buttonText = document.getElementById('buttonText');
     const statusMessage = document.getElementById('statusMessage');
-    const movieTitle = document.getElementById('movieTitle');
     const previewTitle = document.getElementById('previewTitle');
-    const sceneCount = document.getElementById('sceneCount');
+    const previewText = document.getElementById('previewText');
     const moviePlayer = document.getElementById('moviePlayer');
-    const placeholder = document.getElementById('placeholder');
     const downloadBtn = document.getElementById('downloadBtn');
 
-    let selectedFiles = [];
-    let movieObjectUrl = null;
-    let isProcessing = false;
-
-    const allowedExtensions = [
-      '.mp4', '.mov', '.webm', '.m4v', '.avi'
-    ];
-
-    function formatSize(bytes) {
-      if (bytes < 1024 * 1024) {
-        return (bytes / 1024).toFixed(0) + ' KB';
-      }
-
-      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-    }
-
-    function showMessage(text, type = 'info') {
-      statusMessage.textContent = text;
+    function showMessage(message, type = 'info') {
+      statusMessage.textContent = message;
       statusMessage.className = 'message show ' + type;
     }
 
-    function hideMessage() {
-      statusMessage.textContent = '';
-      statusMessage.className = 'message';
-    }
-
-    function validVideo(file) {
-      const extension = '.' + file.name.split('.').pop().toLowerCase();
-
-      return allowedExtensions.includes(extension);
-    }
-
-    function addFiles(fileCollection) {
-      hideMessage();
-
-      const incoming = Array.from(fileCollection || []);
-      let rejected = 0;
-
-      for (const file of incoming) {
-        if (!validVideo(file)) {
-          rejected++;
-          continue;
-        }
-
-        if (file.size > 100 * 1024 * 1024) {
-          rejected++;
-          continue;
-        }
-
-        if (selectedFiles.length >= 20) {
-          rejected++;
-          continue;
-        }
-
-        const duplicate = selectedFiles.some(existing =>
-          existing.name === file.name &&
-          existing.size === file.size &&
-          existing.lastModified === file.lastModified
-        );
-
-        if (!duplicate) {
-          selectedFiles.push(file);
-        }
-      }
-
-      renderFiles();
-
-      if (rejected > 0) {
-        showMessage(
-          rejected + ' file(s) were skipped. Use supported video formats, ' +
-          'files smaller than 100 MB, and no more than 20 clips.',
-          'error'
-        );
-      }
-    }
-
-    function renderFiles() {
-      fileList.replaceChildren();
-
-      selectedFiles.forEach((file, index) => {
-        const row = document.createElement('div');
-        row.className = 'file-item';
-
-        const details = document.createElement('div');
-        details.style.minWidth = '0';
-
-        const name = document.createElement('div');
-        name.className = 'file-name';
-        name.textContent = (index + 1) + '. ' + file.name;
-
-        const size = document.createElement('div');
-        size.className = 'file-size';
-        size.textContent = formatSize(file.size);
-
-        details.append(name, size);
-
-        const controls = document.createElement('div');
-        controls.style.display = 'flex';
-        controls.style.alignItems = 'center';
-        controls.style.gap = '4px';
-
-        if (index > 0) {
-          const up = document.createElement('button');
-          up.type = 'button';
-          up.className = 'remove-btn';
-          up.style.color = 'var(--purple)';
-          up.textContent = '↑';
-          up.title = 'Move clip earlier';
-          up.setAttribute('aria-label', 'Move ' + file.name + ' earlier');
-
-          up.addEventListener('click', () => {
-            [selectedFiles[index - 1], selectedFiles[index]] =
-              [selectedFiles[index], selectedFiles[index - 1]];
-
-            renderFiles();
-          });
-
-          controls.appendChild(up);
-        }
-
-        if (index < selectedFiles.length - 1) {
-          const down = document.createElement('button');
-          down.type = 'button';
-          down.className = 'remove-btn';
-          down.style.color = 'var(--purple)';
-          down.textContent = '↓';
-          down.title = 'Move clip later';
-          down.setAttribute('aria-label', 'Move ' + file.name + ' later');
-
-          down.addEventListener('click', () => {
-            [selectedFiles[index], selectedFiles[index + 1]] =
-              [selectedFiles[index + 1], selectedFiles[index]];
-
-            renderFiles();
-          });
-
-          controls.appendChild(down);
-        }
-
-        const remove = document.createElement('button');
-        remove.type = 'button';
-        remove.className = 'remove-btn';
-        remove.textContent = '×';
-        remove.title = 'Remove clip';
-        remove.setAttribute('aria-label', 'Remove ' + file.name);
-
-        remove.addEventListener('click', () => {
-          selectedFiles.splice(index, 1);
-          renderFiles();
-        });
-
-        controls.appendChild(remove);
-        row.append(details, controls);
-        fileList.appendChild(row);
-      });
-
-      sceneCount.textContent =
-        selectedFiles.length + (selectedFiles.length === 1 ? ' clip' : ' clips');
-    }
-
-    fileInput.addEventListener('change', event => {
-      addFiles(event.target.files);
-
-      // Allow choosing the same file again after removing it.
-      fileInput.value = '';
+    titleInput.addEventListener('input', () => {
+      previewTitle.textContent = titleInput.value.trim() || 'Untitled Movie';
     });
 
-    dropZone.addEventListener('dragover', event => {
-      event.preventDefault();
-      dropZone.classList.add('dragover');
-    });
+    generateBtn.addEventListener('click', async () => {
+      const title = titleInput.value.trim();
+      const prompt = promptInput.value.trim();
 
-    dropZone.addEventListener('dragleave', () => {
-      dropZone.classList.remove('dragover');
-    });
-
-    dropZone.addEventListener('drop', event => {
-      event.preventDefault();
-      dropZone.classList.remove('dragover');
-      addFiles(event.dataTransfer.files);
-    });
-
-    movieTitle.addEventListener('input', () => {
-      previewTitle.textContent = movieTitle.value.trim() || 'Untitled Movie';
-    });
-
-    makeMovieBtn.addEventListener('click', async () => {
-      if (isProcessing) return;
-
-      if (selectedFiles.length === 0) {
-        showMessage('Please upload at least one video clip first.', 'error');
+      if (!title) {
+        showMessage('Please enter a movie title.', 'error');
+        titleInput.focus();
         return;
       }
 
-      isProcessing = true;
-      makeMovieBtn.disabled = true;
-      buttonText.textContent = 'Combining your clips…';
-      downloadBtn.classList.remove('visible');
+      if (prompt.length < 30) {
+        showMessage('Please describe your movie in more detail.', 'error');
+        promptInput.focus();
+        return;
+      }
 
-      showMessage(
-        'Uploading your clips and assembling the movie. Please keep this page open.',
-        'info'
-      );
+      generateBtn.disabled = true;
+      buttonText.textContent = 'Checking generation service…';
+      showMessage('Checking whether a real AI video-generation provider is configured…');
 
-      const formData = new FormData();
-
-      selectedFiles.forEach(file => {
-        formData.append('videos', file, file.name);
-      });
+      const payload = {
+        title,
+        prompt,
+        genre: document.getElementById('genre').value,
+        visualStyle: document.getElementById('style').value,
+        durationMinutes: Number(document.getElementById('duration').value),
+        audio: document.getElementById('audio').value,
+        consistentCharacters: document.getElementById('consistent').checked
+      };
 
       try {
-        // Do not manually set Content-Type: the browser must add
-        // the multipart/form-data boundary itself.
-        const response = await fetch('/api/merge', {
+        const response = await fetch('/api/generate', {
           method: 'POST',
-          body: formData
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
         });
 
         const data = await response.json().catch(() => ({}));
 
         if (!response.ok) {
-          throw new Error(data.error || 'The server could not assemble your movie.');
+          throw new Error(
+            data.error ||
+            'The server has no working AI video-generation provider configured yet.'
+          );
         }
 
         if (!data.movieUrl) {
-          throw new Error('The server did not return a movie download link.');
+          throw new Error(
+            'The server did not return a generated movie. Check the video provider configuration.'
+          );
         }
 
         const movieUrl = new URL(data.movieUrl, window.location.origin).href;
-
-        if (movieObjectUrl) {
-          URL.revokeObjectURL(movieObjectUrl);
-          movieObjectUrl = null;
-        }
-
         moviePlayer.src = movieUrl;
         moviePlayer.style.display = 'block';
-        placeholder.style.display = 'none';
-
         downloadBtn.href = movieUrl;
         downloadBtn.download =
-          (movieTitle.value.trim() || 'cineforge-movie')
-            .replace(/[<>:"/\\|?*\x00-\x1F]/g, '-')
-            .slice(0, 90) + '.mp4';
-
+          title.replace(/[<>:"/\\|?*\x00-\x1F]/g, '-').slice(0, 80) + '.mp4';
         downloadBtn.classList.add('visible');
-        previewTitle.textContent = movieTitle.value.trim() || 'Untitled Movie';
-        sceneCount.textContent =
-          (data.clipsCombined ?? selectedFiles.length) + ' clips';
-
-        showMessage(
-          'Success! Your clips have been assembled. Play the movie in the preview or download the MP4.',
-          'success'
-        );
+        previewText.textContent = 'Your generated movie is ready to preview.';
+        showMessage('The server returned a movie. You can preview and download it.', 'success');
 
       } catch (error) {
-        console.error('Movie assembly failed:', error);
-
+        console.error('AI movie generation request:', error);
         showMessage(
           error.message ||
-          'Could not connect to the movie server. Check that your backend is running.',
+          'Could not contact the movie-generation service.',
           'error'
         );
       } finally {
-        isProcessing = false;
-        makeMovieBtn.disabled = false;
-        buttonText.textContent = 'Combine My Movie';
-      }
-    });
-
-    // Check whether the backend is reachable.
-    fetch('/api/health')
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Server health check failed');
-        }
-
-        return response.json();
-      })
-      .then(data => {
-        console.log('CineForge backend:', data);
-      })
-      .catch(error => {
-        console.warn('CineForge backend is not reachable yet:', error);
-      });
-
-    window.addEventListener('beforeunload', () => {
-      if (movieObjectUrl) {
-        URL.revokeObjectURL(movieObjectUrl);
+        generateBtn.disabled = false;
+        buttonText.textContent = 'Generate AI Movie';
       }
     });
   </script>
 </body>
 </html>
+```
