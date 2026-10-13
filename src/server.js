@@ -14,7 +14,7 @@ const UPLOADS = path.join(ROOT, 'uploads');
 const app = express();
 
 app.use(express.json({ limit: '1mb' }));
-app.use(express.static(path.join(ROOT, 'public')));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use('/output', express.static(OUTPUT));
 
 const storage = multer.diskStorage({
