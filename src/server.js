@@ -79,7 +79,184 @@ app.get('/api/health', (_req, res) => {
     message: 'Upload your video clips to assemble a movie.'
   });
 });
+app.post('/api/generate', async (req, res) => {
+  const apiKey = process.env.MAGIC_HOUR_API_KEY;
 
+  if (!apiKey) {
+    return res.status(500).json({
+      error: 'Magic Hour API key is missing. Add MAGIC_HOUR_API_KEY in Railway Variables.'
+    });
+  }
+
+  const {
+    title,
+    prompt,
+    genre,
+    visualStyle,
+    audio
+  } = req.body || {};
+
+  if (!prompt || typeof prompt !== 'string') {
+    return res.status(400).json({
+      error: 'Please enter a movie prompt.'
+    });
+  }
+
+  let projectId;
+
+  try {
+    const fullPrompt = [
+      `Movie title: ${title || 'The Queen of the Castle'}.`,
+      `Genre: ${genre || 'Fantasy adventure'}.`,
+      `Visual style: ${visualStyle || 'Cinematic fantasy'}.`,
+      prompt,
+      'Create one cinematic opening video clip. Show clear movement, atmospheric lighting, detailed environments, and natural camera motion. Preserve the described character appearances.'
+    ].join('\n');
+
+    // Submit one short test clip to Magic Hour.
+    const createResponse = await fetch(
+      'https://api.magichour.ai/v1/text-to-video',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: title || 'The Queen of the Castle',
+          end_seconds: 5,
+          aspect_ratio: '16:9',
+          model: 'ltx-2.5',
+          resolution: '480p',
+          audio: audio !== 'none',
+          style: {
+            prompt: fullPrompt
+          }
+        })
+      }
+    );
+
+    const created = await createResponse.json();
+
+    if (!createResponse.ok) {
+      console.error('Magic Hour creation error:', created);
+
+      return res.status(createResponse.status).json({
+        error: created.message ||
+          created.error?.message ||
+          'Magic Hour rejected the video request. Check your API access and credits.',
+        details: created
+      });
+    }
+
+    projectId = created.id || created.project?.id;
+
+    if (!projectId) {
+      console.error('Unexpected Magic Hour response:', created);
+
+      return res.status(502).json({
+        error: 'Magic Hour accepted a response, but no project ID was returned.'
+      });
+    }
+
+    // Poll the existing job. Do not submit another generation.
+    let completed = null;
+
+    for (let attempt = 0; attempt < 120; attempt++) {
+      await new Promise(resolve => setTimeout(resolve, 5000));
+
+      const statusResponse = await fetch(
+        `https://api.magichour.ai/v1/video-projects/${encodeURIComponent(projectId)}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${apiKey}`
+          }
+        }
+      );
+
+      const statusData = await statusResponse.json();
+
+      if (!statusResponse.ok) {
+        console.error('Magic Hour status error:', statusData);
+
+        return res.status(502).json({
+          error: 'Could not check the video-generation job. Check Railway logs before retrying.',
+          projectId
+        });
+      }
+
+      if (statusData.status === 'complete') {
+        completed = statusData;
+        break;
+      }
+
+      if (
+        statusData.status === 'error' ||
+        statusData.status === 'canceled'
+      ) {
+        return res.status(502).json({
+          error: statusData.error?.message ||
+            `Video generation ended with status: ${statusData.status}`,
+          projectId
+        });
+      }
+    }
+
+    if (!completed) {
+      return res.status(202).json({
+        error: 'Video generation is taking longer than expected. Check the existing job before trying again.',
+        projectId
+      });
+    }
+
+    const videoUrl =
+      completed.downloads?.[0]?.url ||
+      completed.download?.url;
+
+    if (!videoUrl) {
+      return res.status(502).json({
+        error: 'The video completed, but Magic Hour did not return a download URL.',
+        projectId
+      });
+    }
+
+    // Save the generated video on the server.
+    const jobId = randomUUID();
+    const jobDir = path.join(OUTPUT, jobId);
+
+    await fs.mkdir(jobDir, { recursive: true });
+
+    const videoResponse = await fetch(videoUrl);
+
+    if (!videoResponse.ok) {
+      throw new Error('Could not download the generated video.');
+    }
+
+    const moviePath = path.join(jobDir, 'movie.mp4');
+    const videoBuffer = Buffer.from(await videoResponse.arrayBuffer());
+
+    await fs.writeFile(moviePath, videoBuffer);
+
+    const movieUrl = `/output/${jobId}/movie.mp4`;
+
+    return res.json({
+      ok: true,
+      message: 'Your AI-generated video is ready!',
+      movieUrl,
+      downloadUrl: movieUrl,
+      durationSeconds: 5,
+      projectId
+    });
+
+  } catch (error) {
+    console.error('AI video generation error:', error);
+
+    return res.status(500).json({
+      error: error.message || 'Video generation failed. Check the Railway deployment logs.',
+      projectId
+    });
+  }
+});
 app.post('/api/merge', upload.array('videos', 20), async (req, res) => {
   const files = req.files || [];
 
